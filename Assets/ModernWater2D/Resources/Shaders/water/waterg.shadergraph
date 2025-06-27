@@ -5684,7 +5684,7 @@
     "m_ObjectId": "072d76b183a34590a3def51c0e591a23",
     "m_Title": "Reflections",
     "m_Position": {
-        "x": -5422.9990234375,
+        "x": -5423.0,
         "y": 2369.0
     }
 }
@@ -7180,7 +7180,7 @@
     "m_ObjectId": "148f0b430cb540ac98fbb54df2147021",
     "m_Title": "with perspective",
     "m_Position": {
-        "x": -5764.9990234375,
+        "x": -5765.0,
         "y": 2142.0
     }
 }
@@ -7621,7 +7621,7 @@
     "m_ObjectId": "18bfc07b824b4c9791469cbbfc352b64",
     "m_Title": "Adding Everything Up",
     "m_Position": {
-        "x": -863.9983520507813,
+        "x": -864.0,
         "y": -130.0
     }
 }
@@ -8588,8 +8588,8 @@
     "m_ObjectId": "2092e5be5ccb43c1896c6650f7bd195f",
     "m_Title": "player offset",
     "m_Position": {
-        "x": -10884.9990234375,
-        "y": -1522.9998779296875
+        "x": -10885.0,
+        "y": -1523.0
     }
 }
 
@@ -21650,7 +21650,7 @@
     "m_Title": "waves pp ",
     "m_Position": {
         "x": -7674.0,
-        "y": -2569.000244140625
+        "y": -2569.0
     }
 }
 
@@ -23395,7 +23395,7 @@
     "m_Title": "sun strips",
     "m_Position": {
         "x": -7665.0,
-        "y": -2001.0001220703125
+        "y": -2001.0
     }
 }
 
@@ -26828,7 +26828,7 @@
     "m_Title": "strips speed",
     "m_Position": {
         "x": -8464.0,
-        "y": -1930.000244140625
+        "y": -1930.0
     }
 }
 
