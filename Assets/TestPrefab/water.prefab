@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &855199166520861486
+--- !u!1 &2499979818725717133
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,9 +8,9 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 2020576047897540479}
-  - component: {fileID: 3568873830852611098}
-  - component: {fileID: 6977013731649381871}
+  - component: {fileID: 3888445393330131793}
+  - component: {fileID: 1323987986516570133}
+  - component: {fileID: 1585434025911596690}
   m_Layer: 4
   m_Name: water
   m_TagString: Untagged
@@ -18,28 +18,28 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &2020576047897540479
+--- !u!4 &3888445393330131793
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 855199166520861486}
+  m_GameObject: {fileID: 2499979818725717133}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.91, y: -0.3, z: 0}
+  m_LocalPosition: {x: -0.01, y: -0.01, z: 0}
   m_LocalScale: {x: 1.12, y: 0.655, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &3568873830852611098
+--- !u!114 &1323987986516570133
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 855199166520861486}
+  m_GameObject: {fileID: 2499979818725717133}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 93a4eb44351a6e644ad5211a5b0d8712, type: 3}
@@ -128,7 +128,7 @@ MonoBehaviour:
     _value: 0
   enableBlur:
     _value: 0
-  lightingWhenBlur: 0
+  lightingWhenBlur: 1
   normalsPreview:
     _value: 0
   overrideMainCamera:
@@ -211,9 +211,9 @@ MonoBehaviour:
         _value: 0
     _waterSettings:
       color:
-        _value: {r: 0.027367385, g: 0.090342306, b: 0.14150941, a: 0}
+        _value: {r: 0, g: 0, b: 0, a: 0}
       depthColor:
-        _value: {r: 0.13394447, g: 0.47431052, b: 0.6603774, a: 0}
+        _value: {r: 0.64106447, g: 0.79038846, b: 0.9245283, a: 0}
       coloringType: 1
       tiling:
         _value: {x: 1, y: 1}
@@ -231,17 +231,17 @@ MonoBehaviour:
       obstructionAlpha:
         _value: 1
       foamColor:
-        _value: {r: 0.80451226, g: 0.9499255, b: 0.9528302, a: 0}
+        _value: {r: 1, g: 1, b: 1, a: 0}
       foamSize:
-        _value: 2.41
+        _value: 2.72
       foamSpeed:
         _value: {x: -0.15, y: -0.15}
       foamAlpha:
-        _value: 0.056
+        _value: 0
       distortionSpeed:
-        _value: {x: 0.1, y: 0.1}
+        _value: {x: -0.02, y: -0.02}
       distortionStrength:
-        _value: {x: 0.04, y: 0.03}
+        _value: {x: 0.03, y: 0.03}
       distortionTiling:
         _value: {x: 2, y: 2}
       distortionMinMax:
@@ -251,11 +251,11 @@ MonoBehaviour:
       distortionTexture: {fileID: 2800000, guid: 63a3a961b343e5341a13f8efb4988815, type: 3}
       sunStripsTexture: {fileID: 2800000, guid: 02b9ccfabe688644ebd37eb70cbe2341, type: 3}
       stripsSpeed:
-        _value: 6
+        _value: 3
       stripsScrollingSpeed:
         _value: 0
       stripsSize:
-        _value: 0.57
+        _value: 0.3
       surfaceSprite: {fileID: 0}
       surfaceTexture: {fileID: 0}
       surfaceTiling:
@@ -267,15 +267,15 @@ MonoBehaviour:
       surfaceAlpha:
         _value: 0
       stripsAlpha:
-        _value: 1
+        _value: 0.2
       stripsDensity:
         _value: 16
       foamDensity:
-        _value: 0.24
+        _value: 0.442
       perspective:
         _value: {x: 0, y: 0}
       _useLighting:
-        _value: 0
+        _value: 1
       depthFromObstructors:
         _value: 0
       enableBelowWater:
@@ -323,7 +323,7 @@ MonoBehaviour:
       resolution:
         _value: {x: 1024, y: 598}
       waterCmp: {fileID: 7200000, guid: 14821a0cc6771aa45b7163f15854b208, type: 3}
-      sr: {fileID: 6977013731649381871}
+      sr: {fileID: 1585434025911596690}
       obstruction: {fileID: 0}
       mainCam: {fileID: 0}
       chunksX:
@@ -333,7 +333,7 @@ MonoBehaviour:
       waveRad:
         _value: 0.005
       waveHeight:
-        _value: 0.21
+        _value: 0.05
       dispersion:
         _value: 0.985
       iterations:
@@ -341,7 +341,7 @@ MonoBehaviour:
       simulationSpeed:
         _value: 1
       enableRain:
-        _value: 1
+        _value: 0
       rainWaveHeight:
         _value: 1
       rainSpeed:
@@ -353,9 +353,9 @@ MonoBehaviour:
       normalStrength:
         _value: 1
       waveColor:
-        _value: {r: 0.78764683, g: 0.9433962, b: 0.93597955, a: 1}
+        _value: {r: 0.734247, g: 0.9433962, b: 0.93293875, a: 1}
       waveColorMinMaxHeight:
-        _value: {x: 0, y: 0.4}
+        _value: {x: 0.5, y: 0.5}
     _wavesSettings:
       automaticWaves:
         _value: 1
@@ -430,14 +430,14 @@ MonoBehaviour:
   customWaterMaterial: 0
   _mat: {fileID: 0}
   _matb: {fileID: 0}
-  _sr: {fileID: 6977013731649381871}
---- !u!212 &6977013731649381871
+  _sr: {fileID: 1585434025911596690}
+--- !u!212 &1585434025911596690
 SpriteRenderer:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 855199166520861486}
+  m_GameObject: {fileID: 2499979818725717133}
   m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0

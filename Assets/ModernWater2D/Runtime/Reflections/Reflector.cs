@@ -120,9 +120,6 @@ namespace Water2D
             newSprite.name = original.name + "raymarched";
 
 
-
-
-
             return spritesDictionary[original];
         }
 
@@ -138,8 +135,6 @@ namespace Water2D
             Transform reflectionPivot = (reuseData) ? _data.reflectionPivot : new GameObject("reflection_pivot : " + name).transform;
             Transform reflection = (reuseData) ? _data.reflection : new GameObject("reflection : " + name).transform;
 
-            // hides reflections from scene view as the other camera renders them to another rtexture that is used in scene view anyway
-            // (fixes duplicate sprites in scene view)
 #if UNITY_EDITOR
             if (!ReflectionsSystem.GetInstanceTopDown().reflectionObjectsVisible.value) UnityEditor.SceneVisibilityManager.instance.Hide(reflection.gameObject,true);
             if (!ReflectionsSystem.GetInstanceTopDown().reflectionObjectsVisible.value) UnityEditor.SceneVisibilityManager.instance.Hide(reflectionPivot.gameObject, true);   
