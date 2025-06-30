@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 63ec29f71f72656489c154581ac30d3f, type: 3}
+  m_Name: TestFish
+  m_EditorClassIdentifier: 
+  fishName: 
+  fishID: 0
+  fishPrefab: {fileID: 0}
+  fishType: 0
+  habitats: 
+  minDepth: 0
+  maxDepth: 0
+  health: 0
+  speed: 0
+  acceleration: 0
+  attackPower: 0
+  behaviorType: 0
+  detectionRange: 0
+  escapeSpeedMultiplier: 0
+  maxChaseDuration: 0
+  scopeOfActivity: 0
+  herdCount: 0
+  baseValue: 0
+  minQuantity: 0
+  maxQuantity: 0
+  description: 
+  fishIcon: {fileID: 0}
