@@ -21,16 +21,13 @@ MonoBehaviour:
   maxDepth: 0
   health: 0
   speed: 0
-  acceleration: 0
+  escapeSpeedMultiplier: 0
   attackPower: 0
   behaviorType: 0
   detectionRange: 0
-  escapeSpeedMultiplier: 0
   maxChaseDuration: 0
   scopeOfActivity: 0
   herdCount: 0
   baseValue: 0
-  minQuantity: 0
-  maxQuantity: 0
   description: 
   fishIcon: {fileID: 0}

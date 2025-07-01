@@ -1,6 +1,12 @@
 using UnityEngine;
 
-public class TestFish : MonoBehaviour
+public class TestFish : Fish
 {
-    public FishData FishData;
+
+
+
+    //public override void TestCheck()
+    //{
+    //    Debug.Log(FishData.fishID);
+    //}
 }
