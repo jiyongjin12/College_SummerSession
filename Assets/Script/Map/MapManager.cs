@@ -4,6 +4,9 @@ using System.Linq;
 
 public class MapManager : MonoBehaviour
 {
+    // 싱글톤
+    public static MapManager Instance { get; private set; }
+
     [Header("맵 전체 크기 (월드 좌표 기준)")]
     public Vector3 mapSize = new Vector3(100f, 185f, 30f);
 
@@ -16,8 +19,17 @@ public class MapManager : MonoBehaviour
 
     void Awake()
     {
+        // 싱글톤
+        if (Instance != null && Instance != this)
+        {
+            Debug.LogWarning("MapManager가 여러개, 하나로 조정");
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+
         // 맵 매니저의 위치를 맵의 수직 중앙에 설정 (Y=0이 수면이 되도록)
-        // 맵의 상단(Y=0)이 수면이고, 하단(Y=-mapSize.y)이 바닥이 됩니다.
+        // 맵의 상단(Y=0)이 수면이고, 하단(Y=-mapSize.y)이 바닥이 됨
         this.transform.position = new Vector3(0, -(mapSize.y / 2f), 0);
 
         InitializeMapBiomes();

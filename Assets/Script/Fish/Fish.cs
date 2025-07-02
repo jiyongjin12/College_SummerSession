@@ -1,19 +1,10 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public abstract class Fish : MonoBehaviour 
-{
-    public FishData FishData;
-
+{ // Ã³¸®
+    public FishData fishData;
     
 
-
-
-
-
-    //public abstract void TestCheck();
-
-    //private void Start()
-    //{
-    //    TestCheck();
-    //}
 }

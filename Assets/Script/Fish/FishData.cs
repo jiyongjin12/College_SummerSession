@@ -7,11 +7,11 @@ public class FishData : ScriptableObject
 {
     public string fishName; // 물고기 이름 (예: 참치, 오징어, 해마)
     public int fishID; // ID
-    public GameObject fishPrefab; // 물고기 외형 
+    public GameObject fishPrefab; // 물고기 외형
 
     [Header("생태 정보")]
     public FishType fishType; // 물고기 종류 (예: 일반, 희귀, 전설, 보스) && 사이즈 (예: 소형 중형 대형)으로 바꿔도 될지도 
-    public List<FishHabitat> habitats; // 서식지 (예: 얕은 바다, 심해, 동굴)
+    public List<FishHabitat> habitats; // 서식지 (노말, 동굴, 잔해, 산호초)
     public float minDepth; // 최소 출현 수심
     public float maxDepth; // 최대 출현 수심
 
@@ -23,11 +23,16 @@ public class FishData : ScriptableObject
 
     [Header("행동 패턴")]
     public FishBehaviorType behaviorType; // 행동 타입 (도망침, 공격, 중립)  *
+     [Tooltip("플레이어 감지 범위")]
     public float detectionRange; // 플레이어 감지 범위
-    public float maxChaseDuration; // 최대 추격 시간 (공격형 물고기) || 추적거리로 변경가능
 
-    public float scopeOfActivity; // 활동범위 - 그냥 소속된 바이옴으로 할까..
-    public int herdCount; // 무리의 수  *?
+    [Header("군집")]
+    public bool useBoids; // 군집 시스템 사용 여부
+    
+     [Tooltip("활동 범위")]
+    public float scopeOfActivity; // 활동범위 
+    public int fishUnitCount; // 무리의 수  *?
+
 
     [Header("자원 및 보상")]
     public int baseValue; // 기본 판매 가격
@@ -54,13 +59,6 @@ public enum FishHabitat
     Wreckage,
     CoralReef
 }
-
-//public enum TimeOfDay
-//{
-//    Day,
-//    Night,
-//    Always
-//}
 
 public enum FishBehaviorType
 {

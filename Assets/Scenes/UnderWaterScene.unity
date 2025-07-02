@@ -206,51 +206,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &446053434
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 446053436}
-  - component: {fileID: 446053435}
-  m_Layer: 0
-  m_Name: GameObject
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &446053435
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 446053434}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 426341c39493fec4ba3a78a9bab6cbcc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  FishData: {fileID: 11400000, guid: 475ef17ac7430834785debe8574afc33, type: 2}
---- !u!4 &446053436
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 446053434}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1132561622
 GameObject:
   m_ObjectHideFlags: 0
@@ -398,8 +353,9 @@ GameObject:
   m_Component:
   - component: {fileID: 1839881518}
   - component: {fileID: 1839881517}
+  - component: {fileID: 1839881519}
   m_Layer: 0
-  m_Name: MapManager
+  m_Name: GameManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -421,6 +377,8 @@ MonoBehaviour:
   registeredBiomes:
   - {fileID: 11400000, guid: d529c5573b8b8c548abe887dc1c78252, type: 2}
   - {fileID: 11400000, guid: 0b0a823cf8945c4438ab0018c08ad34e, type: 2}
+  - {fileID: 11400000, guid: 15b6056292131bb4cb4410adba3216de, type: 2}
+  - {fileID: 11400000, guid: e0bd55d4508c3a848958f1e333f6784d, type: 2}
 --- !u!4 &1839881518
 Transform:
   m_ObjectHideFlags: 0
@@ -436,6 +394,24 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1839881519
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1839881516}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a24da3ac6827f4469d7d73cb75366ef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  spawnFishUnitData:
+  - fishData: {fileID: 11400000, guid: 475ef17ac7430834785debe8574afc33, type: 2}
+    boidSpawnCount: 10
+  boidPrefab: {fileID: 4147258140624695078, guid: 309a489fa6ddb814aab08453ac45532e, type: 3}
+  minSpawnDistance: 3
+  rejectionSamples: 30
 --- !u!1 &1913772909
 GameObject:
   m_ObjectHideFlags: 0
@@ -465,7 +441,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d73606c03e4ae8f48bded562dbeab865, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mapManager: {fileID: 1839881517}
   checkInterval: 1
 --- !u!4 &1913772911
 Transform:
@@ -482,12 +457,57 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!4 &1586078696473006113
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2427674871976808399}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2427674871976808399
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1586078696473006113}
+  - component: {fileID: 9113336141516039570}
+  m_Layer: 0
+  m_Name: TestFish
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &9113336141516039570
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2427674871976808399}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 426341c39493fec4ba3a78a9bab6cbcc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  fishData: {fileID: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
   - {fileID: 1132561625}
-  - {fileID: 446053436}
+  - {fileID: 1586078696473006113}
   - {fileID: 1839881518}
   - {fileID: 1913772911}
   - {fileID: 103631604}

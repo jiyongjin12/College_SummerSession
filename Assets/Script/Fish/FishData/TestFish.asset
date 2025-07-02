@@ -12,22 +12,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 63ec29f71f72656489c154581ac30d3f, type: 3}
   m_Name: TestFish
   m_EditorClassIdentifier: 
-  fishName: 
+  fishName: 123
   fishID: 0
-  fishPrefab: {fileID: 0}
+  fishPrefab: {fileID: 303266946381429985, guid: 702863a7f37cd1a43b7aeae553bcfd19, type: 3}
   fishType: 0
-  habitats: 
+  habitats: 0000000002000000
   minDepth: 0
-  maxDepth: 0
-  health: 0
-  speed: 0
-  escapeSpeedMultiplier: 0
-  attackPower: 0
+  maxDepth: 50
+  health: 10
+  speed: 5
+  escapeSpeedMultiplier: 2
+  attackPower: 5
   behaviorType: 0
-  detectionRange: 0
-  maxChaseDuration: 0
-  scopeOfActivity: 0
-  herdCount: 0
+  detectionRange: 10
+  useBoids: 1
+  scopeOfActivity: 5
+  fishUnitCount: 0
   baseValue: 0
   description: 
   fishIcon: {fileID: 0}

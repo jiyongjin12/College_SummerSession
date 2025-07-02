@@ -2,21 +2,12 @@ using UnityEngine;
 
 public class TestBiomeObject : MonoBehaviour
 {
-    public MapManager mapManager; // FindObjectOfType 등으로 찾을 수 있음
-
     // 체크 주기를 설정 (예: 1초마다 체크)
     public float checkInterval = 1f;
     private float timer;
 
     void Start()
     {
-        if (mapManager == null)
-        {
-            Debug.LogError("TestBiomeObject: MapManager를 찾을 수 없습니다. 씬에 MapManager가 있는지 확인하세요.");
-            enabled = false; // 스크립트 비활성화
-            return;
-        }
-
         // 게임 시작 시 한 번 바로 체크
         CheckCurrentBiome();
     }
@@ -37,10 +28,10 @@ public class TestBiomeObject : MonoBehaviour
         Vector3 currentPosition = transform.position;
 
         // MapManager를 통해 현재 위치의 바이옴 데이터를 가져옵니다.
-        Biome currentBiome = mapManager.GetBiomeAtPosition(currentPosition);
+        Biome currentBiome = MapManager.Instance.GetBiomeAtPosition(currentPosition);
 
         // 아마도 수심   
-        float currentDepth = mapManager.GetDepthFromYPosition(currentPosition.y);
+        float currentDepth = MapManager.Instance.GetDepthFromYPosition(currentPosition.y);
 
         if (currentBiome != null)
         {

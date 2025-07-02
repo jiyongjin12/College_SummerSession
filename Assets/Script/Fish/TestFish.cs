@@ -1,7 +1,7 @@
 using UnityEngine;
 
 public class TestFish : Fish
-{
+{ // 특수 처리
 
 
 
