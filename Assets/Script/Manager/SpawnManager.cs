@@ -16,6 +16,8 @@ public class SpawnManager : MonoBehaviour
     public float minSpawnDistance = 2f; // 물고기(군집) 간 최소 이격 거리
     public int rejectionSamples = 30; // 한 지점을 찾기 위해 시도할 최대 횟수
 
+    private List<Vector3> debugSpawnPoints = new List<Vector3>(); // 기즈모용 스폰 위치 저장
+
     void Awake()
     {
         if (Instance != null && Instance != this)
@@ -52,14 +54,14 @@ public class SpawnManager : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 지정된 FishData를 사용하여 Boid 군집을 설정된 수만큼 소환합니다.
-    /// 소환 위치는 해당 물고기의 수심 및 서식지 조건에 맞게 포아송 디스크 샘플링으로 결정됩니다.
-    /// Z축은 항상 0으로 고정됩니다.
-    /// </summary>
+    // 지정된 FishData를 사용하여 Boid 군집을 설정된 수만큼 소환합니다.
+    // 소환 위치는 해당 물고기의 수심 및 서식지 조건에 맞게 포아송 디스크 샘플링으로 결정됩니다.
+    // Z축은 항상 0으로 고정됩니다.
     public void SpawnFishBoids(FishData fishToSpawn, int count)
     {
         List<Vector3> possibleSpawnPositions = new List<Vector3>();
+        debugSpawnPoints.Clear(); // 새로운 호출마다 초기화
+
         int spawnAttemptCount = 0;
         int maxAttemptsPerFish = 1000; // 무한 루프 방지
 
@@ -126,6 +128,7 @@ public class SpawnManager : MonoBehaviour
             {
                 // 유효한 위치를 찾으면 리스트에 추가
                 possibleSpawnPositions.Add(candidatePosition);
+                debugSpawnPoints.Add(candidatePosition); // 기즈모에 사용할 좌표 저장
             }
         }
 
@@ -147,6 +150,17 @@ public class SpawnManager : MonoBehaviour
         if (possibleSpawnPositions.Count < count)
         {
             Debug.LogWarning($"Requested {count} {fishToSpawn.fishName} but only managed to spawn {possibleSpawnPositions.Count} due to space/habitat constraints.");
+        }
+    }
+
+    void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.cyan;
+
+        foreach (Vector3 pos in debugSpawnPoints)
+        {
+            Gizmos.DrawWireSphere(pos, minSpawnDistance * 0.5f); // 최소 거리 반지름의 반으로 작은 원 그리기
+            Gizmos.DrawSphere(pos, 0.1f); // 중심점
         }
     }
 }
