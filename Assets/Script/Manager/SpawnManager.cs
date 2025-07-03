@@ -117,7 +117,8 @@ public class SpawnManager : MonoBehaviour
             foreach (Vector3 existingPos in possibleSpawnPositions)
             {
                 // Z축이 0으로 고정되었으므로 2D 평면 거리 계산과 동일해짐
-                if (Vector3.Distance(candidatePosition, existingPos) < minSpawnDistance)
+                //if (Vector3.Distance(candidatePosition, existingPos) < minSpawnDistance)
+                if (Vector3.Distance(candidatePosition, existingPos) < fishToSpawn.scopeOfActivity * 2)
                 {
                     tooClose = true;
                     break;

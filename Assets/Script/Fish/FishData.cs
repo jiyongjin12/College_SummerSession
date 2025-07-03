@@ -38,9 +38,9 @@ public class FishData : ScriptableObject
     public float flockNeighborhoodRadius = 1.2f; // 각 Fish가 주변 이웃을 탐색할 반경
     public float flockSeparationRadius = 0.6f; // 각 Fish가 분리(충돌 회피)를 위해 고려할 가까운 이웃 반경
 
-    [Range(0f, 2f)] public float flockSeparationWeight = 1.5f; // 분리 힘의 가중치
-    [Range(0f, 2f)] public float flockCohesionWeight = 1f;    // 결집 힘의 가중치
-    [Range(0f, 2f)] public float flockAlignmentWeight = 1f;   // 정렬 힘의 가중치
+    [Range(0f, 20f)] public float flockSeparationWeight = 1.5f; // 분리 힘의 가중치
+    [Range(0f, 20f)] public float flockCohesionWeight = 1f;    // 결집 힘의 가중치
+    [Range(0f, 20f)] public float flockAlignmentWeight = 1f;   // 정렬 힘의 가중치
 
      [Tooltip("장애물 회피 레이어 마스크 (각 Fish에서 설정)")]
     public float obstacleAvoidanceWeight = 2f; // 장애물 회피 힘의 가중치

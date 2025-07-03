@@ -16,8 +16,8 @@ MonoBehaviour:
   fishID: 0
   fishPrefab: {fileID: 303266946381429985, guid: 702863a7f37cd1a43b7aeae553bcfd19, type: 3}
   fishType: 0
-  habitats: 0000000002000000
-  minDepth: 0
+  habitats: 0300000002000000
+  minDepth: 10
   maxDepth: 50
   health: 10
   speed: 2.5
@@ -27,18 +27,18 @@ MonoBehaviour:
   detectionRange: 10
   useBoids: 1
   scopeOfActivity: 10
-  fishUnitCount: 10
+  fishUnitCount: 30
   flockMaxForce: 0.8
   flockNeighborhoodRadius: 1.2
-  flockSeparationRadius: 0.6
+  flockSeparationRadius: 1.6
   flockSeparationWeight: 2
   flockCohesionWeight: 1
   flockAlignmentWeight: 1
-  obstacleAvoidanceWeight: 100
-  raycastLength: 1.5
+  obstacleAvoidanceWeight: 45
+  raycastLength: 1
   rotationSpeed: 360
-  boundaryMargin: 50
-  boundsAvoidanceWeight: 3
+  boundaryMargin: 25
+  boundsAvoidanceWeight: 2
   baseValue: 0
   description: 
   fishIcon: {fileID: 0}
