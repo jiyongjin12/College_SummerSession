@@ -20,14 +20,25 @@ MonoBehaviour:
   minDepth: 0
   maxDepth: 50
   health: 10
-  speed: 5
+  speed: 2.5
   escapeSpeedMultiplier: 2
   attackPower: 5
   behaviorType: 0
   detectionRange: 10
   useBoids: 1
-  scopeOfActivity: 5
-  fishUnitCount: 0
+  scopeOfActivity: 10
+  fishUnitCount: 10
+  flockMaxForce: 0.8
+  flockNeighborhoodRadius: 1.2
+  flockSeparationRadius: 0.6
+  flockSeparationWeight: 2
+  flockCohesionWeight: 1
+  flockAlignmentWeight: 1
+  obstacleAvoidanceWeight: 100
+  raycastLength: 1.5
+  rotationSpeed: 360
+  boundaryMargin: 50
+  boundsAvoidanceWeight: 3
   baseValue: 0
   description: 
   fishIcon: {fileID: 0}

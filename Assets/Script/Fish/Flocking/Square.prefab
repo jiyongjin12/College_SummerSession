@@ -101,17 +101,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 010dbf65aaff3ad47adb7b268152da3d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  baseRotation: {x: 0, y: 0, z: 0}
-  maxSpeed: 1.5
+  maxSpeed: 2
   maxForce: 0.8
   neighborhoodRadius: 1.2
-  separationAmount: 3
-  cohesionAmount: 0.04
-  alignmentAmount: 1
-  obstacleAvoidanceAmount: 2
-  boundsAvoidanceAmount: 2
-  acceleration: {x: 0, y: 0}
-  velocity: {x: 0, y: 0}
+  separationRadius: 0.6
+  separationWeight: 2
+  cohesionWeight: 1
+  alignmentWeight: 1
+  obstacleLayer:
+    serializedVersion: 2
+    m_Bits: 4096
+  obstacleAvoidanceWeight: 10
+  raycastLength: 1.5
+  rotationSpeed: 360
+  boundsAvoidanceWeight: 10
+  boundaryMargin: 3
 --- !u!61 &-1999747472528888638
 BoxCollider2D:
   m_ObjectHideFlags: 0

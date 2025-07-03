@@ -33,6 +33,24 @@ public class FishData : ScriptableObject
     public float scopeOfActivity; // 활동범위 
     public int fishUnitCount; // 무리의 수  *?
 
+    [Header("개별 Fish 군집 행동 파라미터")]
+    public float flockMaxForce = 0.01f; // 각 Fish가 힘을 적용할 최대치
+    public float flockNeighborhoodRadius = 1.2f; // 각 Fish가 주변 이웃을 탐색할 반경
+    public float flockSeparationRadius = 0.6f; // 각 Fish가 분리(충돌 회피)를 위해 고려할 가까운 이웃 반경
+
+    [Range(0f, 2f)] public float flockSeparationWeight = 1.5f; // 분리 힘의 가중치
+    [Range(0f, 2f)] public float flockCohesionWeight = 1f;    // 결집 힘의 가중치
+    [Range(0f, 2f)] public float flockAlignmentWeight = 1f;   // 정렬 힘의 가중치
+
+     [Tooltip("장애물 회피 레이어 마스크 (각 Fish에서 설정)")]
+    public float obstacleAvoidanceWeight = 2f; // 장애물 회피 힘의 가중치
+    public float raycastLength = 1.5f; // 장애물 감지 Raycast 길이
+    public float rotationSpeed = 360f; // 초당 회전 각도
+
+     [Tooltip("경계 회피 마진 (각 Fish에서 설정)")]
+    public float boundaryMargin = 3f; // 경계로부터 이만큼 떨어져 있을 때부터 회피 시작
+    public float boundsAvoidanceWeight = 2f; // 경계 회피 힘의 가중치
+
 
     [Header("자원 및 보상")]
     public int baseValue; // 기본 판매 가격
