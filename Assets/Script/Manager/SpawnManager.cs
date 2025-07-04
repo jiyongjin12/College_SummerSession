@@ -13,8 +13,10 @@ public class SpawnManager : MonoBehaviour
     public Boid boidPrefab; // Boid 스크립트가 붙은 프리팹 (인스턴스화할 대상)
 
     [Header("포아송 디스크 샘플링 설정")]
-    public float minSpawnDistance = 2f; // 물고기(군집) 간 최소 이격 거리
+    public float minSpawnDistance = 4f; // 물고기(군집) 간 최소 이격 거리
     public int rejectionSamples = 30; // 한 지점을 찾기 위해 시도할 최대 횟수
+
+    public LayerMask wallLayer; // 벽 감지 
 
     private List<Vector3> debugSpawnPoints = new List<Vector3>(); // 기즈모용 스폰 위치 저장
 
@@ -39,7 +41,6 @@ public class SpawnManager : MonoBehaviour
     {
         if (MapManager.Instance == null)
         {
-            Debug.LogError("MapManager가 씬에 없습니다. 물고기 스폰 불가.");
             return;
         }
 
@@ -83,6 +84,8 @@ public class SpawnManager : MonoBehaviour
         float mapWorldMinX = MapManager.Instance.transform.position.x - MapManager.Instance.mapSize.x / 2f;
         float mapWorldMaxX = MapManager.Instance.transform.position.x + MapManager.Instance.mapSize.x / 2f;
 
+        List<Biome> spawnedBiomesForBoids = new List<Biome>();
+
 
         while (possibleSpawnPositions.Count < count && spawnAttemptCount < maxAttemptsPerFish)
         {
@@ -112,13 +115,21 @@ public class SpawnManager : MonoBehaviour
                 continue; // 서식지가 맞지 않으면 다음 시도
             }
 
+            float checkRadius = 2f; // 벽에서 떨어질 만큼의 반지름
+            if (Physics2D.OverlapCircle(candidatePosition, checkRadius, wallLayer))
+            {
+                // 콜라이더와 겹치면 다음 시도
+                //Debug.Log($"Spawn attempt at {candidatePosition} failed due to wall collision.");
+                continue;
+            }
+
             // 포아송 디스크 샘플링: 기존 소환 위치들과 최소 거리 유지
             bool tooClose = false;
             foreach (Vector3 existingPos in possibleSpawnPositions)
             {
                 // Z축이 0으로 고정되었으므로 2D 평면 거리 계산과 동일해짐
-                //if (Vector3.Distance(candidatePosition, existingPos) < minSpawnDistance)
-                if (Vector3.Distance(candidatePosition, existingPos) < fishToSpawn.scopeOfActivity * 2)
+                //if (Vector3.Distance(candidatePosition, existingPos) < fishToSpawn.scopeOfActivity * 2)
+                if (Vector3.Distance(candidatePosition, existingPos) < minSpawnDistance)
                 {
                     tooClose = true;
                     break;
@@ -130,12 +141,16 @@ public class SpawnManager : MonoBehaviour
                 // 유효한 위치를 찾으면 리스트에 추가
                 possibleSpawnPositions.Add(candidatePosition);
                 debugSpawnPoints.Add(candidatePosition); // 기즈모에 사용할 좌표 저장
+                spawnedBiomesForBoids.Add(biomeAtPosition); // biom저장
             }
         }
 
         // 유효한 위치에 Boid 프리팹 인스턴스화
-        foreach (Vector3 spawnPos in possibleSpawnPositions)
+        for (int i = 0; i < possibleSpawnPositions.Count; i++) // forEach 대신 for 루프 사용
         {
+            Vector3 spawnPos = possibleSpawnPositions[i];
+            Biome boidBiome = spawnedBiomesForBoids[i]; // 해당 Boid의 Biome 가져오기
+
             if (boidPrefab == null)
             {
                 Debug.LogError("Boid Prefab이 SpawnManager에 할당되지 않았습니다!");
@@ -143,9 +158,10 @@ public class SpawnManager : MonoBehaviour
             }
 
             Boid newBoid = Instantiate(boidPrefab, spawnPos, Quaternion.identity);
-            newBoid.targetFishData = fishToSpawn; // Boid에 FishData 할당
-
-            Debug.Log($"Spawned {fishToSpawn.fishName} Boid at {spawnPos} (Z:{spawnPos.z}) in Biome: {MapManager.Instance.GetBiomeAtPosition(spawnPos)?.biomeName}");
+            newBoid.targetFishData = fishToSpawn;
+            newBoid.currentBiome = boidBiome; 
+            // FishData의 scopeOfActivity를 Boid 군집의 초기 원형 범위로 설정 (SpawnManager에서 결정)
+            newBoid.SetFlockingBounds(spawnPos, fishToSpawn.scopeOfActivity);
         }
 
         if (possibleSpawnPositions.Count < count)

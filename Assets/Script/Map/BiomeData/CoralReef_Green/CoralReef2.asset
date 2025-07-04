@@ -14,6 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   biomeName: CoralReef
   habitatType: 3
-  center: {x: -3, y: 37.3, z: 0}
-  size: {x: 50, y: 25, z: 0}
+  center: {x: -10, y: 70, z: 0}
+  size: {x: 110, y: 60, z: 0}
   colorString: green

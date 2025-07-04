@@ -18,27 +18,26 @@ MonoBehaviour:
   fishType: 0
   habitats: 0300000002000000
   minDepth: 10
-  maxDepth: 50
+  maxDepth: 190
   health: 10
-  speed: 2.5
+  speed: 1.5
   escapeSpeedMultiplier: 2
   attackPower: 5
   behaviorType: 0
   detectionRange: 10
-  useBoids: 1
-  scopeOfActivity: 10
-  fishUnitCount: 30
-  flockMaxForce: 0.8
-  flockNeighborhoodRadius: 1.2
-  flockSeparationRadius: 1.6
+  scopeOfActivity: 30
+  fishUnitCount: 8
+  flockMaxForce: 1
+  flockNeighborhoodRadius: 1.4
+  flockSeparationRadius: 1.3
   flockSeparationWeight: 2
   flockCohesionWeight: 1
   flockAlignmentWeight: 1
-  obstacleAvoidanceWeight: 45
+  obstacleAvoidanceWeight: 15
   raycastLength: 1
   rotationSpeed: 360
-  boundaryMargin: 25
-  boundsAvoidanceWeight: 2
+  boundaryMargin: 2.5
+  boundsAvoidanceWeight: 5
   baseValue: 0
   description: 
   fishIcon: {fileID: 0}

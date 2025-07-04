@@ -26,8 +26,8 @@ public class FishData : ScriptableObject
      [Tooltip("플레이어 감지 범위")]
     public float detectionRange; // 플레이어 감지 범위
 
-    [Header("군집")]
-    public bool useBoids; // 군집 시스템 사용 여부
+    //[Header("군집")]
+    //public bool useBoids; // 군집 시스템 사용 여부
     
      [Tooltip("활동 범위")]
     public float scopeOfActivity; // 활동범위 
@@ -75,7 +75,8 @@ public enum FishHabitat
     Normal,
     Cave,
     Wreckage,
-    CoralReef
+    CoralReef,
+    DontSpawnt
 }
 
 public enum FishBehaviorType

@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: da94aa831bba5f8458eb4d0cfed671a3, type: 3}
-  m_Name: Wreckage1
+  m_Name: DontSpawn 1
   m_EditorClassIdentifier: 
-  biomeName: Wreckage1
-  habitatType: 2
-  center: {x: -37.5, y: 67.1, z: 0}
-  size: {x: 25, y: 25, z: 2}
-  colorString: blue
+  biomeName: DeathZoon1
+  habitatType: 4
+  center: {x: 0, y: 180, z: 0}
+  size: {x: 210, y: 10, z: 2}
+  colorString: Red

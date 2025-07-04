@@ -2,10 +2,14 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 
-public abstract class Fish : MonoBehaviour 
+public abstract class Fish : MonoBehaviour
 { // 처리
     public FishData fishData;
     public Boid parentBoid;
+
+    public Biome currentBiome; // 소환된 바이옴 정보
+
+    public bool FlockingSystemONOFF_Test = false;
 
     // 내부 사용 변수 (FishData에서 가져올 값이 아님)
     private Vector2 acceleration;
@@ -47,29 +51,36 @@ public abstract class Fish : MonoBehaviour
 
         // 1. 주변 이웃 탐색 (자신과 같은 Boid 아래에 있는 Fish들만 대상으로 함)
         var fishColliders = Physics2D.OverlapCircleAll(transform.position, fishData.flockNeighborhoodRadius); // FishData 값 직접 사용
-        var neighboringFish = fishColliders.Select(o => o.GetComponent<Fish>()).Where(f => f != null && f != this && f.transform.parent == this.transform.parent).ToList();
+        var neighboringFish = fishColliders.Select(o => o.GetComponent<Fish>()).Where(f => f != null && f != this && f.transform.parent == this.transform.parent).ToList(); // 같은 자식만 무리로 함
+        //var neighboringFish = fishColliders.Select(o => o.GetComponent<Fish>()).Where(f => f != null && f != this && f.fishData.name == this.fishData.name).ToList(); // 이름이 같은 물고기들만 무리로 함
 
-        // 2. 군집 규칙 적용
-        Flock(neighboringFish);
+        if (FlockingSystemONOFF_Test)
+            Debug.Log("플레이어 발견 후 이동 처리");
+        else
+        {
+            // 2. 군집 규칙 적용
+            Flock(neighboringFish);
 
-        // 3. 장애물 회피 적용
-        ObstacleAvoidance();
+            // 3. 장애물 회피 적용
+            ObstacleAvoidance();
 
-        // 4. 경계 회피 적용 (원형 경계)
-        CircularBoundaryAvoidance();
+            // 4. 경계 회피 적용 (원형 경계)
+            CircularBoundaryAvoidance();
 
-        // 5. 속도 및 위치 업데이트
-        UpdateVelocity();
-        UpdatePosition();
+            // 추가. 바이옴 경계 회피 적용 (사각경계)
+            RectangleBoundaryAvoidance(); 
 
-        // 6. 회전 업데이트 (바라보는 방향)
-        UpdateRotation();
+            // 5. 속도 및 위치 업데이트
+            UpdateVelocity();
+            UpdatePosition();
+
+            // 6. 회전 업데이트 (바라보는 방향)
+            UpdateRotation();
+        }
+
     }
 
-    /// <summary>
-    /// 세 가지 군집 규칙 (정렬, 결집, 분리)을 적용하여 가속도를 계산합니다.
-    /// </summary>
-    /// <param name="fishAgents">주변에 있는 다른 Fish 에이전트 목록</param>
+    // 세 가지 군집 규칙 (정렬, 결집, 분리)을 적용하여 가속도를 계산
     private void Flock(IEnumerable<Fish> fishAgents)
     {
         Vector2 alignmentForce = Alignment(fishAgents);
@@ -82,9 +93,7 @@ public abstract class Fish : MonoBehaviour
         acceleration += alignmentForce * fishData.flockAlignmentWeight;
     }
 
-    /// <summary>
-    /// 장애물과의 충돌을 회피하는 힘을 계산하여 가속도에 추가합니다.
-    /// </summary>
+    // 장애물과의 충돌을 회피하는 힘을 계산하여 가속도에 추가합니다.
     private void ObstacleAvoidance()
     {
         Vector2 currentForward = velocity.normalized;
@@ -134,9 +143,8 @@ public abstract class Fish : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 설정된 원형 경계 밖으로 나가지 않도록 회피하는 힘을 계산하여 가속도에 추가합니다.
-    /// </summary>
+
+    // 설정된 원형 경계 밖으로 나가지 않도록 회피하는 힘을 계산하여 가속도에 추가
     private void CircularBoundaryAvoidance()
     {
         if (_flockingBoundsRadius <= 0) return;
@@ -147,7 +155,6 @@ public abstract class Fish : MonoBehaviour
         // FishData 값 직접 사용
         if (distanceFromCenter >= _flockingBoundsRadius - fishData.boundaryMargin)
         {
-            Debug.Log("경계값 적용");
 
             Vector2 desiredDirection = (_flockingBoundsCenter - (Vector2)transform.position).normalized;
             // FishData 값 직접 사용
@@ -161,9 +168,70 @@ public abstract class Fish : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 가속도를 속도에 적용하고, 속도 제한을 적용합니다.
-    /// </summary>
+
+    // 바이옴 범위 나가지 않도록 회피
+    private void RectangleBoundaryAvoidance()
+    {
+        if (currentBiome == null || MapManager.Instance == null) return;
+
+        Vector3 currentPos = transform.position;
+
+        // Biome의 center를 MapManager의 위치를 기준으로 월드 좌표로 변환
+        Vector3 biomeWorldCenter = MapManager.Instance.transform.position + currentBiome.center;
+        Vector3 biomeSize = currentBiome.size; 
+
+        Vector3 minBounds = biomeWorldCenter - biomeSize / 2f;
+        Vector3 maxBounds = biomeWorldCenter + biomeSize / 2f;
+
+        Vector2 desiredDirection = Vector2.zero;
+        bool outsideBoundary = false;
+
+        // X 경계 밖에 있는지 확인
+        if (currentPos.x < minBounds.x)
+        {
+            desiredDirection += Vector2.right; // 오른쪽으로 이동 유도
+            outsideBoundary = true;
+        }
+        else if (currentPos.x > maxBounds.x)
+        {
+            desiredDirection += Vector2.left; // 왼쪽으로 이동 유도
+            outsideBoundary = true;
+        }
+
+        // Y 경계 밖에 있는지 확인
+        if (currentPos.y < minBounds.y)
+        {
+            desiredDirection += Vector2.up; // 위로 이동 유도
+            outsideBoundary = true;
+        }
+        else if (currentPos.y > maxBounds.y)
+        {
+            desiredDirection += Vector2.down; // 아래로 이동 유도
+            outsideBoundary = true;
+        }
+
+        if (outsideBoundary)
+        {
+            desiredDirection.Normalize(); // 방향 정규화
+            Vector2 steerForce = Steer(desiredDirection * fishData.speed);
+
+            // 경계 밖에 있을 때, 경계 내부의 가장 가까운 지점 계산
+            float closestX = Mathf.Clamp(currentPos.x, minBounds.x, maxBounds.x);
+            float closestY = Mathf.Clamp(currentPos.y, minBounds.y, maxBounds.y);
+            Vector2 closestPointInBiome = new Vector2(closestX, closestY);
+
+            // 경계 밖으로 벗어난 거리 계산
+            float distOutsideBoundary = Vector2.Distance(currentPos, closestPointInBiome);
+
+            // 벗어난 거리에 비례하여 0에서 1 사이 값으로 정규화
+            float strength = Mathf.Clamp01(distOutsideBoundary / fishData.boundaryMargin);
+            strength = Mathf.Max(strength, 0.1f); // 최소 힘을 보장, 너무 느리게 돌아오지 않도록 함
+
+            acceleration += steerForce * fishData.boundsAvoidanceWeight * strength;
+        }
+    }
+
+    // 가속도를 속도에 적용하고, 속도 제한을 적용
     protected void UpdateVelocity()
     {
         velocity += acceleration * Time.deltaTime;
@@ -179,9 +247,7 @@ public abstract class Fish : MonoBehaviour
         velocity = LimitMagnitude(velocity, fishData.speed);
     }
 
-    /// <summary>
-    /// 속도를 이용하여 오브젝트의 위치를 업데이트합니다.
-    /// </summary>
+    // 속도를 이용하여 오브젝트의 위치를 업데이트합니다.
     protected void UpdatePosition()
     {
         Vector3 newPosition = transform.position + (Vector3)velocity * Time.deltaTime;
@@ -189,9 +255,7 @@ public abstract class Fish : MonoBehaviour
         transform.position = newPosition;
     }
 
-    /// <summary>
-    /// 오브젝트가 현재 속도 방향을 바라보도록 회전시킵니다.
-    /// </summary>
+    // 오브젝트가 현재 속도 방향을 바라보도록 회전
     protected void UpdateRotation()
     {
         if (velocity.sqrMagnitude < 0.001f) return;
@@ -204,11 +268,7 @@ public abstract class Fish : MonoBehaviour
         transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, fishData.rotationSpeed * Time.deltaTime);
     }
 
-    /// <summary>
-    /// 주변 이웃들의 평균 속도와 동일한 방향으로 움직이려는 힘 (정렬)을 계산합니다.
-    /// </summary>
-    /// <param name="fishAgents">주변 이웃 목록</param>
-    /// <returns>정렬 힘 벡터</returns>
+    // 주변 이웃들의 평균 속도와 동일한 방향으로 움직이려는 힘 (정렬)
     private Vector2 Alignment(IEnumerable<Fish> fishAgents)
     {
         if (!fishAgents.Any()) return Vector2.zero;
@@ -224,11 +284,7 @@ public abstract class Fish : MonoBehaviour
         return Steer(averageVelocity.normalized * fishData.speed);
     }
 
-    /// <summary>
-    /// 주변 이웃들의 평균 위치(질량 중심)로 이동하려는 힘 (결집)을 계산합니다.
-    /// </summary>
-    /// <param name="fishAgents">주변 이웃 목록</param>
-    /// <returns>결집 힘 벡터</returns>
+    // 주변 이웃들의 평균 위치(질량 중심)로 이동하려는 힘 (결집)을 계산합니다.
     private Vector2 Cohesion(IEnumerable<Fish> fishAgents)
     {
         if (!fishAgents.Any()) return Vector2.zero;
@@ -244,11 +300,7 @@ public abstract class Fish : MonoBehaviour
         return Steer((centerOfMass - (Vector2)transform.position).normalized * fishData.speed);
     }
 
-    /// <summary>
-    /// 가까운 이웃들과 충돌하지 않도록 밀어내려는 힘 (분리)을 계산합니다.
-    /// </summary>
-    /// <param name="fishAgents">주변 이웃 목록</param>
-    /// <returns>분리 힘 벡터</returns>
+    // 가까운 이웃들과 충돌하지 않도록 밀어내려는 힘 (분리)
     private Vector2 Separation(IEnumerable<Fish> fishAgents)
     {
         // FishData 값 직접 사용
@@ -266,12 +318,8 @@ public abstract class Fish : MonoBehaviour
         return Steer(repulsionForce.normalized * fishData.speed);
     }
 
-    /// <summary>
-    /// 원하는 속도(desired)로 가기 위해 필요한 가속도(steering force)를 계산합니다.
-    /// 이 힘은 최대 힘(maxForce)으로 제한됩니다.
-    /// </summary>
-    /// <param name="desired">원하는 속도 벡터</param>
-    /// <returns>계산된 조향 힘 벡터</returns>
+    // 원하는 속도(desired)로 가기 위해 필요한 가속도(steering force)를 계산
+    // 이 힘은 최대 힘(maxForce)으로 제한
     private Vector2 Steer(Vector2 desired)
     {
         // FishData 값 직접 사용
@@ -279,12 +327,7 @@ public abstract class Fish : MonoBehaviour
         return LimitMagnitude(steerForce, fishData.flockMaxForce); // maxForce도 fishData에서 가져옴
     }
 
-    /// <summary>
-    /// 벡터의 크기를 제한합니다.
-    /// </summary>
-    /// <param name="vector">제한할 벡터</param>
-    /// <param name="max">최대 크기</param>
-    /// <returns>크기가 제한된 벡터</returns>
+    // 벡터 크기를 제한합니다.
     private Vector2 LimitMagnitude(Vector2 vector, float max)
     {
         return vector.sqrMagnitude > max * max ? vector.normalized * max : vector;

@@ -6,12 +6,14 @@ public class Boid : MonoBehaviour
     [Header("군집 설정")]
     public FishData targetFishData;
 
+    public Biome currentBiome; // 소환 바이옴
+
     // 이 Boid 군집 안의 모든 Fish들이 활동할 원형 경계 정보
     private Vector2 flockingBoundsCenter;
     private float flockingBoundsRadius; // 원형 경계의 반지름
 
-    // Boid의 SetFlockingBounds는 SpawnManager에서 Boid 스폰 직후 호출될 수 있습니다.
-    // 하지만 Boid 내에서 Fish 스폰 시점에 이 값이 필요하므로, Boid의 Start에서 Fish를 스폰합니다.
+    // Boid의 SetFlockingBounds는 SpawnManager에서 Boid 스폰 직후 호출될 수 있움
+    // 하지만 Boid 내에서 Fish 스폰 시점에 이 값이 필요하므로, Boid의 Start에서 Fish를 스폰
     public void SetFlockingBounds(Vector2 center, float radius)
     {
         flockingBoundsCenter = center;
@@ -22,25 +24,18 @@ public class Boid : MonoBehaviour
     {
         if (targetFishData == null)
         {
-            Debug.LogError("Boid에 targetFishData가 할당되지 않았습니다! 스폰 불가.");
             Destroy(gameObject);
             return;
         }
 
-        flockingBoundsCenter = transform.position;
-        flockingBoundsRadius = targetFishData.scopeOfActivity;
-
         SpawnIndividualFish();
     }
 
-    /// <summary>
-    /// 이 Boid 군집 내부에 개별 Fish들을 포아송 디스크 샘플링 방식으로 스폰합니다.
-    /// </summary>
+    // 이 Boid 군집 내부에 개별 Fish들을 포아송 디스크 샘플링 방식으로 스폰
     private void SpawnIndividualFish()
     {
         if (targetFishData.fishPrefab == null)
         {
-            Debug.LogError($"FishData '{targetFishData.fishName}'에 fishPrefab이 할당되지 않았습니다!");
             return;
         }
 
@@ -79,21 +74,18 @@ public class Boid : MonoBehaviour
             {
                 individualFish.fishData = targetFishData; // FishData 할당
                 individualFish.parentBoid = this; // 자기 자신 참조
+                individualFish.currentBiome = this.currentBiome; // 스폰 바이옴 정보 넘기기
                 individualFish.SetFlockingBounds(flockingBoundsCenter, flockingBoundsRadius); // 개별 Fish에게 원형 경계 정보 전달
             }
             else
             {
-                Debug.LogWarning($"Prefab for {targetFishData.fishName} does not have a Fish component!");
                 Destroy(fishObj);
                 continue;
             }
             spawnedCount++;
         }
 
-        if (spawnedCount == 0)
-        {
-            Debug.LogWarning($"Failed to spawn any individual fish for Boid of {targetFishData.fishName}. Check prefab or spawn area. Requested: {targetFishData.fishUnitCount}");
-        }
+        
     }
 
     // 디버그를 위한 Gizmo (군집 경계 시각화 - 원형)
@@ -107,8 +99,6 @@ public class Boid : MonoBehaviour
     }
 }
 
-// PoissonDiskSampling2D 유틸리티는 이전과 동일합니다.
-// (변동 없음)
 public static class PoissonDiskSampling2D
 {
     public static List<Vector2> GeneratePoints(float radius, Vector2 sampleRegionSize, int rejectionSamples = 30, Vector2 offset = default(Vector2))

@@ -7,7 +7,7 @@ public class Biome : ScriptableObject
     public string biomeName; // 바이옴 이름 (예: 동굴, 산호초)
     public FishHabitat habitatType; // 이 바이옴의 FishHabitat 타입 (예: Cave, CoralReef)
 
-    [Header("바이옴 위치 및 크기 (월드 좌표)")]
+    [Header("바이옴 위치 및 크기")]
     public Vector3 center;
     public Vector3 size; 
 
