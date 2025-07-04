@@ -2246,7 +2246,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   spawnFishUnitData:
   - fishData: {fileID: 11400000, guid: 475ef17ac7430834785debe8574afc33, type: 2}
-    boidSpawnCount: 1
+    boidSpawnCount: 100
   boidPrefab: {fileID: 4147258140624695078, guid: 309a489fa6ddb814aab08453ac45532e, type: 3}
   minSpawnDistance: 3
   rejectionSamples: 500
