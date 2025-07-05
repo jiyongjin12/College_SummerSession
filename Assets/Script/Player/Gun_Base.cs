@@ -59,12 +59,10 @@ public abstract class Gun_Base : MonoBehaviour
     public float suckRange = 3f;
     public float fieldOfView = 60f; // 원뿔 각도 (좌우로 30도씩)
     public float enemymoveSpeed = 5f;
-    public float absorbDistance = 0.2f;
     public LayerMask suckableLayer;
     public Transform suckPoint;
     public Vector2 suckDirection;
-
-    private List<Transform> suckingTargets = new List<Transform>();
+    public Vector3 lastPosition = Vector3.zero;
 
     protected virtual void Start()
     {
@@ -93,6 +91,12 @@ public abstract class Gun_Base : MonoBehaviour
         if (cur_bullet_delay < max_bullet_delay) cur_bullet_delay += Time.deltaTime;
     }
 
+    public void UsingGun(bool curMode)
+    {
+        if (curMode) Fire();
+        else Inhale();
+    }
+
     void Reload()
     {
         cur_rerode_delay += Time.deltaTime;
@@ -114,7 +118,7 @@ public abstract class Gun_Base : MonoBehaviour
         }
     }
 
-    public void Fire()
+    private void Fire()
     {
         if (!isActive) return;
 
@@ -154,24 +158,24 @@ public abstract class Gun_Base : MonoBehaviour
         float z = Mathf.Atan2(dir_gun.y, dir_gun.x) * Mathf.Rad2Deg;
         rot = z - 90f;
         float angle = Vector2.SignedAngle(Vector2.right, dir_gun);
+        //Debug.Log($"{dir_gun} / {rot} / {z} / {angle}");
         me.eulerAngles = new Vector3(0, 0, angle);
     }
 
-    public void Suck()
+    private void Inhale()
     {
         if (!isActive) return;
 
         suckDirection = dir_gun;
 
-        suckingTargets.Clear();
         if (!Input.GetMouseButton(1)) { return; }
         FindObj();
-        //Inhale();
     }
 
     void FindObj()
     {
         Collider2D[] colliders = Physics2D.OverlapCircleAll(suckPoint.position, suckRange, suckableLayer);
+        Collider2D[] InhaleCollider = Physics2D.OverlapCircleAll(suckPoint.position, 0.3f, suckableLayer);
 
         foreach (Collider2D col in colliders)
         {
@@ -179,43 +183,24 @@ public abstract class Gun_Base : MonoBehaviour
 
             float angle = Vector2.Angle(suckDirection.normalized, toTarget);
 
-            if (angle < fieldOfView / 2f && !suckingTargets.Contains(col.transform))
+            if (angle < fieldOfView / 2f)
             {
                 Transform target = col.transform;
-                target.position = Vector2.MoveTowards(target.position, suckPoint.position, enemymoveSpeed * Time.deltaTime);
+                //target.position = Vector2.MoveTowards(target.position, suckPoint.position, enemymoveSpeed * Time.deltaTime);
+                Rigidbody2D rb = col.GetComponent<Rigidbody2D>();
 
-                float distance = Vector2.Distance(target.position, suckPoint.position);
-                if (distance < absorbDistance)
-                {
-                    Absorb(target);
-                }
+                //float distance = Vector2.Distance(target.position, suckPoint.position);
+                Vector2 dir = ((Vector2)suckPoint.position - rb.position).normalized;
+                rb.AddForce(dir * enemymoveSpeed, ForceMode2D.Force);
             }
         }
-    }
 
-    void Inhale()
-    {
-        for (int i = suckingTargets.Count - 1; i >= 0; i--)
+        foreach (Collider2D col in InhaleCollider)
         {
-            Transform target = suckingTargets[i];
-
-            if (target == null) continue;
-
-            target.position = Vector2.MoveTowards(target.position, suckPoint.position, enemymoveSpeed * Time.deltaTime);
-
-            float distance = Vector2.Distance(target.position, suckPoint.position);
-            if (distance < absorbDistance)
-            {
-                Absorb(target);
-                suckingTargets.RemoveAt(i);
-            }
+            Destroy(col.gameObject);
         }
-    }
 
-    void Absorb(Transform target)
-    {
-
-        Destroy(target.gameObject);
+        
     }
 
     void OnDrawGizmosSelected()
@@ -231,6 +216,9 @@ public abstract class Gun_Base : MonoBehaviour
             Gizmos.color = Color.yellow;
             Gizmos.DrawLine(suckPoint.position, suckPoint.position + leftBoundary * suckRange);
             Gizmos.DrawLine(suckPoint.position, suckPoint.position + rightBoundary * suckRange);
+
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireSphere(suckPoint.position, 0.3f);
         }
     }
 
