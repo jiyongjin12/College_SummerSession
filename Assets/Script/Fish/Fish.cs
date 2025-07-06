@@ -38,11 +38,6 @@ public abstract class Fish : MonoBehaviour
 
     protected virtual void Awake()
     {
-        if (fishData == null)
-        {
-            Debug.LogWarning($"Fish on {gameObject.name} does not have FishData assigned! Flocking behavior may not work correctly.");
-        }
-
         if (obstacleLayer.value == 0)
         {
             obstacleLayer = LayerMask.GetMask("Wall");
@@ -103,7 +98,7 @@ public abstract class Fish : MonoBehaviour
 
             if (_currentActionTimer <= 0f)
             {
-                Debug.Log($"{gameObject.name}: Action time expired. Entering cooldown.");
+                //Debug.Log($"{gameObject.name}: Action time expired. Entering cooldown.");
                 ResetPlayerActionState();
             }
             else
@@ -117,7 +112,7 @@ public abstract class Fish : MonoBehaviour
 
             if (_currentActionCooldownTimer <= 0f)
             {
-                Debug.Log($"{gameObject.name}: Cooldown finished. Ready to detect player again.");
+                //Debug.Log($"{gameObject.name}: Cooldown finished. Ready to detect player again.");
                 _isOnActionCooldown = false;
             }
 
@@ -163,7 +158,7 @@ public abstract class Fish : MonoBehaviour
     {
         _isPlayerDetected = true;       // 플레이어 감지 플래그 켜기
         velocity = Vector2.zero;        // 움직임 완전 정지
-        Debug.Log($"{gameObject.name}: Player Detected! Initializing reaction.");
+        //Debug.Log($"{gameObject.name}: Player Detected! Initializing reaction.");
     }
 
     /// <summary>
@@ -218,9 +213,6 @@ public abstract class Fish : MonoBehaviour
         CircularBoundaryAvoidance();
         RectangleBoundaryAvoidance();
     }
-
-
-
 
 
     // --- 기존의 군집, 회피, 이동 관련 메서드들 (protected로 변경) ---
@@ -353,15 +345,27 @@ public abstract class Fish : MonoBehaviour
 
     protected void UpdateVelocity()
     {
+        //velocity += acceleration * Time.deltaTime;
+
+        //float minCurrentSpeed = fishData.normalSpeed * 0.4f;
+        //if (velocity.magnitude < minCurrentSpeed)
+        //{
+        //    velocity = velocity.normalized * minCurrentSpeed;
+        //}
+
+        //velocity = LimitMagnitude(velocity, fishData.normalSpeed);
+
         velocity += acceleration * Time.deltaTime;
 
-        float minCurrentSpeed = fishData.normalSpeed * 0.4f;
-        if (velocity.magnitude < minCurrentSpeed)
+        // 현재 최대 속도를 결정합니다.
+        float currentMaxSpeed = fishData.normalSpeed;
+        if (_isActingOnPlayer) // 플레이어에게 반응 중일 때 (추격/도망/반격)
         {
-            velocity = velocity.normalized * minCurrentSpeed;
+            currentMaxSpeed *= fishData.actionSpeedMultiplier;
         }
 
-        velocity = LimitMagnitude(velocity, fishData.normalSpeed);
+        // 최대 속도 제한
+        velocity = LimitMagnitude(velocity, currentMaxSpeed);
     }
 
     protected void UpdatePosition()
