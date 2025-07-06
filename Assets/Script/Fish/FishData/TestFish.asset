@@ -14,30 +14,34 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fishName: 123
   fishID: 0
-  fishPrefab: {fileID: 303266946381429985, guid: 702863a7f37cd1a43b7aeae553bcfd19, type: 3}
+  fishPrefab: {fileID: 303266946381429985, guid: e80011214773a16409eb0e872046db7e, type: 3}
   fishType: 0
   habitats: 0300000002000000
   minDepth: 10
   maxDepth: 190
   health: 10
-  speed: 1.5
-  escapeSpeedMultiplier: 2
-  attackPower: 5
+  normalSpeed: 2.5
   behaviorType: 0
-  detectionRange: 10
+  playerDetectionRange: 2
   scopeOfActivity: 30
   fishUnitCount: 8
   flockMaxForce: 1
-  flockNeighborhoodRadius: 1.4
+  flockNeighborhoodRadius: 3
   flockSeparationRadius: 1.3
   flockSeparationWeight: 2
   flockCohesionWeight: 1
   flockAlignmentWeight: 1
-  obstacleAvoidanceWeight: 15
+  obstacleAvoidanceWeight: 20
   raycastLength: 1
   rotationSpeed: 360
   boundaryMargin: 2.5
   boundsAvoidanceWeight: 5
+  actionSpeedMultiplier: 1.5
+  chaseDuration: 5
+  chaseCooldown: 3
+  attackRange: 2
+  attackDamage: 3
+  attackCooldown: 1
   baseValue: 0
   description: 
   fishIcon: {fileID: 0}

@@ -10,10 +10,10 @@ GameObject:
   m_Component:
   - component: {fileID: 6242655717447514732}
   - component: {fileID: 7080309977233826164}
-  - component: {fileID: 16122772045126562}
+  - component: {fileID: -3240164276558952043}
   - component: {fileID: -1355026627076769067}
   m_Layer: 0
-  m_Name: FishUnit_Test
+  m_Name: FishUnit_RunAway
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -89,7 +89,7 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &16122772045126562
+--- !u!114 &-3240164276558952043
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -98,14 +98,20 @@ MonoBehaviour:
   m_GameObject: {fileID: 303266946381429985}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 426341c39493fec4ba3a78a9bab6cbcc, type: 3}
+  m_Script: {fileID: 11500000, guid: a07de4f663e965f40ac2e233a7a3aa71, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   fishData: {fileID: 0}
   parentBoid: {fileID: 0}
+  currentBiome: {fileID: 0}
+  _currentActionTimer: 0
+  FlockingSystemONOFF_Test: 0
   obstacleLayer:
     serializedVersion: 2
     m_Bits: 4096
+  playerLayer:
+    serializedVersion: 2
+    m_Bits: 0
 --- !u!61 &-1355026627076769067
 BoxCollider2D:
   m_ObjectHideFlags: 0

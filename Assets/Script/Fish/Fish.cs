@@ -6,106 +6,245 @@ public abstract class Fish : MonoBehaviour
 { // 처리
     public FishData fishData;
     public Boid parentBoid;
+    public Biome currentBiome;
 
-    public Biome currentBiome; // 소환된 바이옴 정보
+    protected Transform _playerTransform;
+    protected bool _isPlayerDetected = false;
+    protected bool _isActingOnPlayer = false;
+    protected bool _isOnActionCooldown = false;
+    protected bool _isDamagedReacting = false;
+    protected bool _isAttacking = false;
+
+    public float _currentActionTimer = 0f;
+    private float _currentActionCooldownTimer = 0f;
+    protected float _currentAttackCooldownTimer = 0f;
 
     public bool FlockingSystemONOFF_Test = false;
 
-    // 내부 사용 변수 (FishData에서 가져올 값이 아님)
-    private Vector2 acceleration;
-    private Vector2 velocity;
+    protected Vector2 acceleration;
+    protected Vector2 velocity;
 
     public LayerMask obstacleLayer;
+    public LayerMask playerLayer;
 
-    // Boid로부터 받은 원형 경계 정보 (FishData에 고정된 값이 아님)
     private Vector2 _flockingBoundsCenter;
     private float _flockingBoundsRadius;
 
-    // 이 Fish 개체가 움직일 원형 경계 영역을 설정합니다. (Boid에서 호출)
     public void SetFlockingBounds(Vector2 center, float radius)
     {
         _flockingBoundsCenter = center;
         _flockingBoundsRadius = radius;
     }
 
+    protected virtual void Awake()
+    {
+        if (fishData == null)
+        {
+            Debug.LogWarning($"Fish on {gameObject.name} does not have FishData assigned! Flocking behavior may not work correctly.");
+        }
+
+        if (obstacleLayer.value == 0)
+        {
+            obstacleLayer = LayerMask.GetMask("Wall");
+            if (obstacleLayer.value == 0)
+            {
+                Debug.LogWarning($"Layer 'Wall' not found for obstacleLayer on {gameObject.name}. Please set it manually in Inspector or create 'Wall' layer.");
+            }
+        }
+        if (playerLayer.value == 0)
+        {
+            playerLayer = LayerMask.GetMask("Player");
+            if (playerLayer.value == 0)
+            {
+                Debug.LogWarning($"Layer 'Player' not found for playerLayer on {gameObject.name}. Please set it manually in Inspector or create 'Player' layer.");
+            }
+        }
+    }
+
     protected virtual void Start()
     {
-        // fishData가 없으면 기본값 사용 또는 오류 처리 (필요시)
         float currentMaxSpeed = 0f;
 
         if (fishData != null)
-            currentMaxSpeed = fishData.speed;
+            currentMaxSpeed = fishData.normalSpeed;
         else
-            Debug.Log("데이터 확인");
+        {
+            Debug.LogError("FishData가 할당되지 않았습니다. 기본 속도를 3f로 설정합니다.");
+            currentMaxSpeed = 3f;
+        }
 
-        // 시작 시 랜덤 방향으로 초기 속도 설정
         float angle = Random.Range(0, 2 * Mathf.PI);
         velocity = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * currentMaxSpeed;
         transform.rotation = Quaternion.Euler(0, 0, angle * Mathf.Rad2Deg);
     }
 
-    public void Update()
+    protected virtual void Update()
     {
-        // 매 프레임 가속도 초기화
         acceleration = Vector2.zero;
 
-        // 1. 주변 이웃 탐색 (자신과 같은 Boid 아래에 있는 Fish들만 대상으로 함)
-        var fishColliders = Physics2D.OverlapCircleAll(transform.position, fishData.flockNeighborhoodRadius); // FishData 값 직접 사용
-        var neighboringFish = fishColliders.Select(o => o.GetComponent<Fish>()).Where(f => f != null && f != this && f.transform.parent == this.transform.parent).ToList(); // 같은 자식만 무리로 함
-        //var neighboringFish = fishColliders.Select(o => o.GetComponent<Fish>()).Where(f => f != null && f != this && f.fishData.name == this.fishData.name).ToList(); // 이름이 같은 물고기들만 무리로 함
+        if (fishData == null) return;
 
-        if (FlockingSystemONOFF_Test)
-            Debug.Log("플레이어 발견 후 이동 처리");
-        else
+        if (_currentAttackCooldownTimer > 0)
         {
-            // 2. 군집 규칙 적용
-            Flock(neighboringFish);
-
-            // 3. 장애물 회피 적용
-            ObstacleAvoidance();
-
-            // 4. 경계 회피 적용 (원형 경계)
-            CircularBoundaryAvoidance();
-
-            // 추가. 바이옴 경계 회피 적용 (사각경계)
-            RectangleBoundaryAvoidance(); 
-
-            // 5. 속도 및 위치 업데이트
-            UpdateVelocity();
-            UpdatePosition();
-
-            // 6. 회전 업데이트 (바라보는 방향)
-            UpdateRotation();
+            _currentAttackCooldownTimer -= Time.deltaTime;
         }
 
+        if (FlockingSystemONOFF_Test)
+        {
+            HandlePlayerInteraction();
+        }
+        else if (_isDamagedReacting)
+        {
+            HandleDamagedReaction();
+        }
+        else if (_isActingOnPlayer)
+        {
+            _currentActionTimer -= Time.deltaTime;
+
+            if (_currentActionTimer <= 0f)
+            {
+                Debug.Log($"{gameObject.name}: Action time expired. Entering cooldown.");
+                ResetPlayerActionState();
+            }
+            else
+            {
+                HandlePlayerInteraction();
+            }
+        }
+        else if (_isOnActionCooldown)
+        {
+            _currentActionCooldownTimer -= Time.deltaTime;
+
+            if (_currentActionCooldownTimer <= 0f)
+            {
+                Debug.Log($"{gameObject.name}: Cooldown finished. Ready to detect player again.");
+                _isOnActionCooldown = false;
+            }
+
+            PerformFlockingAndBoundaryChecks(); // 군집 행동
+        }
+        else
+        {
+            // 플레이어 감지 시도 (각 자식 클래스에서 오버라이드하여 감지)
+            bool playerFound = DetectPlayer();
+            if (playerFound)
+            {
+                HandlePlayerDetection(); // 플레이어 감지 시 공통 처리
+            }
+            else if (_isPlayerDetected && !_isActingOnPlayer) // 이전에 감지되었는데 지금은 사라진 경우 (NeutralFish용)
+            {
+                // NeutralFish에서 이 상태를 ResetNeutralWatchState()로 처리
+                // Attack/EscapeFish는 _isActingOnPlayer 상태에서 _playerTransform == null로 처리됨
+            }
+
+            // 플레이어에게 행동 중이 아닐 때만 군집 행동
+            if (!_isActingOnPlayer && !_isPlayerDetected) // _isPlayerDetected는 NeutralFish의 주시 상태를 의미
+            {
+                PerformFlockingAndBoundaryChecks();
+            }
+        }
+
+        UpdateVelocity();
+        UpdatePosition();
+        UpdateRotation();
     }
 
-    // 세 가지 군집 규칙 (정렬, 결집, 분리)을 적용하여 가속도를 계산
-    private void Flock(IEnumerable<Fish> fishAgents)
+    /// <summary>
+    /// 플레이어 감지 로직. 각 물고기 타입이 오버라이드하여 플레이어 감지 여부를 반환합니다.
+    /// 감지 시 _playerTransform에 플레이어 참조를 저장해야 합니다.
+    /// </summary>
+    /// <returns>플레이어가 시야 내에 감지되면 true, 아니면 false.</returns>
+    protected virtual bool DetectPlayer() { return false; }
+
+    /// <summary>
+    /// 플레이어가 감지되었을 때 공통적으로 수행하는 초기화 및 상태 전환 로직.
+    /// </summary>
+    protected virtual void HandlePlayerDetection()
+    {
+        _isPlayerDetected = true;       // 플레이어 감지 플래그 켜기
+        velocity = Vector2.zero;        // 움직임 완전 정지
+        Debug.Log($"{gameObject.name}: Player Detected! Initializing reaction.");
+    }
+
+    /// <summary>
+    /// 플레이어에게 데미지를 받았을 때 호출되는 메서드.
+    /// </summary>
+    public virtual void TakeDamage(Transform damageDealer)
+    {
+        Debug.Log($"{gameObject.name} took damage from {damageDealer.name}. Default Fish reaction.");
+    }
+
+    /// <summary>
+    /// 피격 시 반응을 처리하는 추상 메서드. 자식 클래스에서 오버라이드.
+    /// </summary>
+    protected abstract void HandleDamagedReaction();
+
+    /// <summary>
+    /// 플레이어가 감지되었거나 피격 반응 시 호출되는 추상 메서드.
+    /// </summary>
+    protected abstract void HandlePlayerInteraction();
+
+    /// <summary>
+    /// 플레이어와 상호작용 (추격/도망/공격) 상태를 초기화하고 쿨다운 상태로 전환합니다.
+    /// </summary>
+    protected void ResetPlayerActionState()
+    {
+        _isActingOnPlayer = false;
+        _isPlayerDetected = false;
+        _isAttacking = false;
+        _playerTransform = null;
+
+        _isOnActionCooldown = true;
+        _currentActionCooldownTimer = fishData.chaseCooldown;
+
+        velocity = Vector2.zero; // 상태 초기화 후 잠시 멈춤
+    }
+
+    // NeutralFish에서 더 이상 사용되지 않습니다.
+    protected virtual void NeutralWatchPlayerRotation() { }
+
+    /// <summary>
+    /// 군집 행동 및 경계 검사를 수행하는 도우미 메서드.
+    /// </summary>
+    protected void PerformFlockingAndBoundaryChecks()
+    {
+        var fishColliders = Physics2D.OverlapCircleAll(transform.position, fishData.flockNeighborhoodRadius);
+        var neighboringFish = fishColliders.Select(o => o.GetComponent<Fish>())
+                                .Where(f => f != null && f != this && f.transform.parent == this.transform.parent)
+                                .ToList();
+
+        Flock(neighboringFish);
+        ObstacleAvoidance();
+        CircularBoundaryAvoidance();
+        RectangleBoundaryAvoidance();
+    }
+
+
+
+
+
+    // --- 기존의 군집, 회피, 이동 관련 메서드들 (protected로 변경) ---
+    protected void Flock(IEnumerable<Fish> fishAgents)
     {
         Vector2 alignmentForce = Alignment(fishAgents);
         Vector2 cohesionForce = Cohesion(fishAgents);
         Vector2 separationForce = Separation(fishAgents);
 
-        // FishData 값 직접 사용
         acceleration += separationForce * fishData.flockSeparationWeight;
         acceleration += cohesionForce * fishData.flockCohesionWeight;
         acceleration += alignmentForce * fishData.flockAlignmentWeight;
     }
 
-    // 장애물과의 충돌을 회피하는 힘을 계산하여 가속도에 추가합니다.
-    private void ObstacleAvoidance()
+    protected void ObstacleAvoidance()
     {
         Vector2 currentForward = velocity.normalized;
         Vector2 leftRayDir = Quaternion.Euler(0, 0, 30) * currentForward;
         Vector2 rightRayDir = Quaternion.Euler(0, 0, -30) * currentForward;
 
-        // FishData 값 직접 사용
         RaycastHit2D frontHit = Physics2D.CircleCast(transform.position, 0.2f, currentForward, fishData.raycastLength, obstacleLayer);
         RaycastHit2D leftHit = Physics2D.CircleCast(transform.position, 0.2f, leftRayDir, fishData.raycastLength, obstacleLayer);
         RaycastHit2D rightHit = Physics2D.CircleCast(transform.position, 0.2f, rightRayDir, fishData.raycastLength, obstacleLayer);
 
-        // 디버그 그리기 (여기도 FishData 값 직접 사용)
         Debug.DrawRay(transform.position, currentForward * fishData.raycastLength, frontHit.collider ? Color.red : Color.white);
         Debug.DrawRay(transform.position, leftRayDir * fishData.raycastLength, leftHit.collider ? Color.red : Color.green);
         Debug.DrawRay(transform.position, rightRayDir * fishData.raycastLength, rightHit.collider ? Color.red : Color.green);
@@ -138,47 +277,34 @@ public abstract class Fish : MonoBehaviour
 
         if (hitCount > 0)
         {
-            // FishData 값 직접 사용
-            acceleration += Steer(steerForce.normalized * fishData.speed) * fishData.obstacleAvoidanceWeight;
+            acceleration += Steer(steerForce.normalized * fishData.normalSpeed) * fishData.obstacleAvoidanceWeight;
         }
     }
 
-
-    // 설정된 원형 경계 밖으로 나가지 않도록 회피하는 힘을 계산하여 가속도에 추가
-    private void CircularBoundaryAvoidance()
+    protected void CircularBoundaryAvoidance()
     {
         if (_flockingBoundsRadius <= 0) return;
-        if (fishData == null) return; // fishData가 없으면 실행하지 않음
+        if (fishData == null) return;
 
         float distanceFromCenter = Vector2.Distance(transform.position, _flockingBoundsCenter);
 
-        // FishData 값 직접 사용
         if (distanceFromCenter >= _flockingBoundsRadius - fishData.boundaryMargin)
         {
-
             Vector2 desiredDirection = (_flockingBoundsCenter - (Vector2)transform.position).normalized;
-            // FishData 값 직접 사용
-            Vector2 steerForce = Steer(desiredDirection * fishData.speed);
+            Vector2 steerForce = Steer(desiredDirection * fishData.normalSpeed);
 
-            // 경계에 가까울수록 힘을 강하게 적용 (FishData 값 직접 사용)
             float strength = Mathf.Clamp01((distanceFromCenter - (_flockingBoundsRadius - fishData.boundaryMargin)) / fishData.boundaryMargin);
-
-            // FishData 값 직접 사용
             acceleration += steerForce * fishData.boundsAvoidanceWeight * strength;
         }
     }
 
-
-    // 바이옴 범위 나가지 않도록 회피
-    private void RectangleBoundaryAvoidance()
+    protected void RectangleBoundaryAvoidance()
     {
         if (currentBiome == null || MapManager.Instance == null) return;
 
         Vector3 currentPos = transform.position;
-
-        // Biome의 center를 MapManager의 위치를 기준으로 월드 좌표로 변환
         Vector3 biomeWorldCenter = MapManager.Instance.transform.position + currentBiome.center;
-        Vector3 biomeSize = currentBiome.size; 
+        Vector3 biomeSize = currentBiome.size;
 
         Vector3 minBounds = biomeWorldCenter - biomeSize / 2f;
         Vector3 maxBounds = biomeWorldCenter + biomeSize / 2f;
@@ -186,68 +312,58 @@ public abstract class Fish : MonoBehaviour
         Vector2 desiredDirection = Vector2.zero;
         bool outsideBoundary = false;
 
-        // X 경계 밖에 있는지 확인
         if (currentPos.x < minBounds.x)
         {
-            desiredDirection += Vector2.right; // 오른쪽으로 이동 유도
+            desiredDirection += Vector2.right;
             outsideBoundary = true;
         }
         else if (currentPos.x > maxBounds.x)
         {
-            desiredDirection += Vector2.left; // 왼쪽으로 이동 유도
+            desiredDirection += Vector2.left;
             outsideBoundary = true;
         }
 
-        // Y 경계 밖에 있는지 확인
         if (currentPos.y < minBounds.y)
         {
-            desiredDirection += Vector2.up; // 위로 이동 유도
+            desiredDirection += Vector2.up;
             outsideBoundary = true;
         }
         else if (currentPos.y > maxBounds.y)
         {
-            desiredDirection += Vector2.down; // 아래로 이동 유도
+            desiredDirection += Vector2.down;
             outsideBoundary = true;
         }
 
         if (outsideBoundary)
         {
-            desiredDirection.Normalize(); // 방향 정규화
-            Vector2 steerForce = Steer(desiredDirection * fishData.speed);
+            desiredDirection.Normalize();
+            Vector2 steerForce = Steer(desiredDirection * fishData.normalSpeed);
 
-            // 경계 밖에 있을 때, 경계 내부의 가장 가까운 지점 계산
             float closestX = Mathf.Clamp(currentPos.x, minBounds.x, maxBounds.x);
             float closestY = Mathf.Clamp(currentPos.y, minBounds.y, maxBounds.y);
             Vector2 closestPointInBiome = new Vector2(closestX, closestY);
 
-            // 경계 밖으로 벗어난 거리 계산
             float distOutsideBoundary = Vector2.Distance(currentPos, closestPointInBiome);
-
-            // 벗어난 거리에 비례하여 0에서 1 사이 값으로 정규화
             float strength = Mathf.Clamp01(distOutsideBoundary / fishData.boundaryMargin);
-            strength = Mathf.Max(strength, 0.1f); // 최소 힘을 보장, 너무 느리게 돌아오지 않도록 함
+            strength = Mathf.Max(strength, 0.1f);
 
             acceleration += steerForce * fishData.boundsAvoidanceWeight * strength;
         }
     }
 
-    // 가속도를 속도에 적용하고, 속도 제한을 적용
     protected void UpdateVelocity()
     {
         velocity += acceleration * Time.deltaTime;
 
-        // FishData 값 직접 사용
-        float minCurrentSpeed = fishData.speed * 0.4f;
+        float minCurrentSpeed = fishData.normalSpeed * 0.4f;
         if (velocity.magnitude < minCurrentSpeed)
         {
             velocity = velocity.normalized * minCurrentSpeed;
         }
 
-        // FishData 값 직접 사용
-        velocity = LimitMagnitude(velocity, fishData.speed);
+        velocity = LimitMagnitude(velocity, fishData.normalSpeed);
     }
 
-    // 속도를 이용하여 오브젝트의 위치를 업데이트합니다.
     protected void UpdatePosition()
     {
         Vector3 newPosition = transform.position + (Vector3)velocity * Time.deltaTime;
@@ -255,58 +371,38 @@ public abstract class Fish : MonoBehaviour
         transform.position = newPosition;
     }
 
-    // 오브젝트가 현재 속도 방향을 바라보도록 회전
     protected void UpdateRotation()
     {
-        if (velocity.sqrMagnitude < 0.001f) return;
-        if (fishData == null) return; // fishData가 없으면 실행하지 않음
+        if (velocity.sqrMagnitude < 0.001f || fishData == null) return;
 
         float targetAngle = Mathf.Atan2(velocity.y, velocity.x) * Mathf.Rad2Deg;
         Quaternion targetRotation = Quaternion.Euler(0, 0, targetAngle);
 
-        // FishData 값 직접 사용
         transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, fishData.rotationSpeed * Time.deltaTime);
     }
 
-    // 주변 이웃들의 평균 속도와 동일한 방향으로 움직이려는 힘 (정렬)
-    private Vector2 Alignment(IEnumerable<Fish> fishAgents)
+    protected Vector2 Alignment(IEnumerable<Fish> fishAgents)
     {
         if (!fishAgents.Any()) return Vector2.zero;
-
         Vector2 averageVelocity = Vector2.zero;
-        foreach (var f in fishAgents)
-        {
-            averageVelocity += f.velocity;
-        }
+        foreach (var f in fishAgents) { averageVelocity += f.velocity; }
         averageVelocity /= fishAgents.Count();
-
-        // FishData 값 직접 사용
-        return Steer(averageVelocity.normalized * fishData.speed);
+        return Steer(averageVelocity.normalized * fishData.normalSpeed);
     }
 
-    // 주변 이웃들의 평균 위치(질량 중심)로 이동하려는 힘 (결집)을 계산합니다.
-    private Vector2 Cohesion(IEnumerable<Fish> fishAgents)
+    protected Vector2 Cohesion(IEnumerable<Fish> fishAgents)
     {
         if (!fishAgents.Any()) return Vector2.zero;
-
         Vector2 centerOfMass = Vector2.zero;
-        foreach (var f in fishAgents)
-        {
-            centerOfMass += (Vector2)f.transform.position;
-        }
+        foreach (var f in fishAgents) { centerOfMass += (Vector2)f.transform.position; }
         centerOfMass /= fishAgents.Count();
-
-        // FishData 값 직접 사용
-        return Steer((centerOfMass - (Vector2)transform.position).normalized * fishData.speed);
+        return Steer((centerOfMass - (Vector2)transform.position).normalized * fishData.normalSpeed);
     }
 
-    // 가까운 이웃들과 충돌하지 않도록 밀어내려는 힘 (분리)
-    private Vector2 Separation(IEnumerable<Fish> fishAgents)
+    protected Vector2 Separation(IEnumerable<Fish> fishAgents)
     {
-        // FishData 값 직접 사용
         var closeFish = fishAgents.Where(f => Vector2.Distance(transform.position, f.transform.position) <= fishData.flockSeparationRadius).ToList();
         if (!closeFish.Any()) return Vector2.zero;
-
         Vector2 repulsionForce = Vector2.zero;
         foreach (var f in closeFish)
         {
@@ -314,21 +410,16 @@ public abstract class Fish : MonoBehaviour
             repulsionForce += diff.normalized / Mathf.Max(0.001f, diff.magnitude * diff.magnitude);
         }
         repulsionForce /= closeFish.Count;
-        // FishData 값 직접 사용
-        return Steer(repulsionForce.normalized * fishData.speed);
+        return Steer(repulsionForce.normalized * fishData.normalSpeed);
     }
 
-    // 원하는 속도(desired)로 가기 위해 필요한 가속도(steering force)를 계산
-    // 이 힘은 최대 힘(maxForce)으로 제한
-    private Vector2 Steer(Vector2 desired)
+    protected Vector2 Steer(Vector2 desired)
     {
-        // FishData 값 직접 사용
         Vector2 steerForce = desired - velocity;
-        return LimitMagnitude(steerForce, fishData.flockMaxForce); // maxForce도 fishData에서 가져옴
+        return LimitMagnitude(steerForce, fishData.flockMaxForce);
     }
 
-    // 벡터 크기를 제한합니다.
-    private Vector2 LimitMagnitude(Vector2 vector, float max)
+    protected Vector2 LimitMagnitude(Vector2 vector, float max)
     {
         return vector.sqrMagnitude > max * max ? vector.normalized * max : vector;
     }
@@ -336,19 +427,25 @@ public abstract class Fish : MonoBehaviour
     // --- Gizmos for Debugging ---
     protected virtual void OnDrawGizmosSelected()
     {
-        if (Application.isPlaying && fishData != null) // fishData가 있을 때만 그리기
+        if (fishData == null) return;
+
+        if (Application.isPlaying && parentBoid != null)
         {
             Gizmos.color = Color.magenta;
-            // Boid로부터 받은 원형 경계를 그립니다.
             Gizmos.DrawWireSphere(_flockingBoundsCenter, _flockingBoundsRadius);
-            // FishData 값 직접 사용
             Gizmos.DrawWireSphere(_flockingBoundsCenter, _flockingBoundsRadius - fishData.boundaryMargin);
         }
 
-        // FishData가 없으면 기본값으로 그리기 (선택 사항)
-        float currentNeighborhoodRadius = (fishData != null) ? fishData.flockNeighborhoodRadius : 1.2f;
-        float currentSeparationRadius = (fishData != null) ? fishData.flockSeparationRadius : 0.6f;
-        float currentRaycastLength = (fishData != null) ? fishData.raycastLength : 1.5f;
+        if (Application.isPlaying && currentBiome != null && MapManager.Instance != null)
+        {
+            Gizmos.color = currentBiome.GetGizmoColor();
+            Vector3 biomeWorldCenter = MapManager.Instance.transform.position + currentBiome.center;
+            Gizmos.DrawWireCube(biomeWorldCenter, currentBiome.size);
+        }
+
+        float currentNeighborhoodRadius = fishData.flockNeighborhoodRadius;
+        float currentSeparationRadius = fishData.flockSeparationRadius;
+        float currentRaycastLength = fishData.raycastLength;
 
         Gizmos.color = Color.gray;
         Gizmos.DrawWireSphere(transform.position, currentNeighborhoodRadius);
@@ -361,13 +458,27 @@ public abstract class Fish : MonoBehaviour
         Gizmos.color = Color.yellow;
         Gizmos.DrawLine(transform.position, (Vector3)transform.position + (Vector3)acceleration * 10f);
 
+        if (fishData != null)
+        {
+            Gizmos.color = Color.cyan;
+            Gizmos.DrawWireSphere(transform.position, fishData.playerDetectionRange);
+            Vector2 forwardDir = velocity.normalized;
+            if (forwardDir.sqrMagnitude < 0.001f) forwardDir = transform.right;
+
+            float detectionAngleHalf = 60f;
+            Vector3 leftLimit = Quaternion.Euler(0, 0, detectionAngleHalf) * forwardDir * fishData.playerDetectionRange;
+            Vector3 rightLimit = Quaternion.Euler(0, 0, -detectionAngleHalf) * forwardDir * fishData.playerDetectionRange;
+
+            Gizmos.DrawLine(transform.position, transform.position + leftLimit);
+            Gizmos.DrawLine(transform.position, transform.position + rightLimit);
+        }
+
 #if UNITY_EDITOR
         if (Application.isPlaying && fishData != null)
         {
             var fishColliders = Physics2D.OverlapCircleAll(transform.position, fishData.flockNeighborhoodRadius);
             var neighboringFish = fishColliders.Select(o => o.GetComponent<Fish>()).Where(f => f != null && f != this && f.transform.parent == this.transform.parent).ToList();
 
-            // FishData 값 직접 사용
             Vector2 align = Alignment(neighboringFish);
             Vector2 coh = Cohesion(neighboringFish);
             Vector2 sep = Separation(neighboringFish);
