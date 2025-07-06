@@ -9,10 +9,10 @@ public class SpawnManager : MonoBehaviour
     [Header("스폰할 물고기 유닛 데이터")]
     public List<SpawnList> spawnFishUnitData; // 인스펙터에서 설정할 스폰 리스트
 
-    [Header("군집 프리팹 (Boid 컴포넌트 포함)")]
+    [Header("군집 프리팹")]
     public Boid boidPrefab; // Boid 스크립트가 붙은 프리팹 (인스턴스화할 대상)
 
-    [Header("포아송 디스크 샘플링 설정")]
+    [Header("포아송 디스크 샘플링")]
     public float minSpawnDistance = 4f; // 물고기(군집) 간 최소 이격 거리
     public int rejectionSamples = 30; // 한 지점을 찾기 위해 시도할 최대 횟수
 

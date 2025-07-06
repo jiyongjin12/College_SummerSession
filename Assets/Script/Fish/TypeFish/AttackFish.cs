@@ -57,7 +57,7 @@ public class AttackFish : Fish
         base.HandlePlayerDetection(); // Fish.cs의 공통 감지 로직 호출 (_isPlayerDetected = true, velocity = zero)
         _isActingOnPlayer = true; // 감지 즉시 추격 행동 시작
         _currentActionTimer = fishData.chaseDuration; // 추격 시간 설정
-        Debug.Log($"{gameObject.name}: Player Detected! Transitioning to Chase state.");
+        //Debug.Log($"{gameObject.name}: Player Detected! Transitioning to Chase state.");
     }
 
     public override void TakeDamage(Transform damageDealer)
@@ -86,7 +86,7 @@ public class AttackFish : Fish
         if (_playerTransform == null)
         {
             ResetPlayerActionState();
-            Debug.Log($"{gameObject.name} (AttackFish): Player disappeared, returning to flocking.");
+            //Debug.Log($"{gameObject.name} (AttackFish): Player disappeared, returning to flocking.");
             return;
         }
 
