@@ -9,7 +9,9 @@ public class Player : MonoBehaviour
     public static Player Instance => _instance;
 
     [Header("Objects")]
-    public Transform target;
+    public VariableJoystick moveJoystick;
+    public VariableJoystick targetJoystick;
+    public RectTransform target;
     Rigidbody2D rigid;
     Animator anim;
     Vector3 pos;
@@ -28,6 +30,8 @@ public class Player : MonoBehaviour
 
     bool isDamage;
     public bool isActive = false;
+    public bool fireMode = true;
+    public float radius;
 
     [Header("Pos")]
     [SerializeField] Vector3 localPosition;
@@ -53,17 +57,21 @@ public class Player : MonoBehaviour
     {
         pos = transform.position;
         if (!isActive) return;
+        if (targetJoystick.HendleMove != Vector2.zero) target.anchoredPosition = targetJoystick.HendleMove * radius;
 
         Move();
-        curWeapon.Fire();
-        curWeapon.Suck();
+        curWeapon.UsingGun(fireMode);
     }
+
+    public void ChangeGunMode(){ fireMode = !fireMode; } 
 
     void Move()
     {
         //if (isSlow) return;
-        x = Input.GetAxisRaw("Horizontal");
-        y = Input.GetAxisRaw("Vertical");
+        // x = Input.GetAxisRaw("Horizontal");
+        // y = Input.GetAxisRaw("Vertical");
+        x = moveJoystick.Horizontal;
+        y = moveJoystick.Vertical;
 
         dir = target.position - pos;
         float z = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
