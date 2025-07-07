@@ -10,7 +10,7 @@ public class MapManager : MonoBehaviour
     [Header("맵 전체 크기 (월드 좌표 기준)")]
     public Vector3 mapSize = new Vector3(100f, 185f, 30f);
 
-    [Header("맵에 배치할 바이옴 데이터 (MapManager 로컬 기준)")]
+    [Header("맵에 배치할 바이옴 데이터 (MapManager 기준)")]
     public List<Biome> registeredBiomes;
 
     private Biome _normalBiomeInfo;

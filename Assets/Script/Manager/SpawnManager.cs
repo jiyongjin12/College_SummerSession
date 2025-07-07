@@ -55,13 +55,13 @@ public class SpawnManager : MonoBehaviour
         }
     }
 
-    // 지정된 FishData를 사용하여 Boid 군집을 설정된 수만큼 소환합니다.
-    // 소환 위치는 해당 물고기의 수심 및 서식지 조건에 맞게 포아송 디스크 샘플링으로 결정됩니다.
-    // Z축은 항상 0으로 고정됩니다.
+    // 지정된 FishData를 사용하여 Boid 군집을 설정된 수만큼 소환
+    // 소환 위치는 해당 물고기의 수심 및 서식지 조건에 맞게 포아송 디스크 샘플링으로 결정
+    // Z축은 항상 0으로 고정
     public void SpawnFishBoids(FishData fishToSpawn, int count)
     {
         List<Vector3> possibleSpawnPositions = new List<Vector3>();
-        debugSpawnPoints.Clear(); // 새로운 호출마다 초기화
+        //debugSpawnPoints.Clear(); // 새로운 호출마다 초기화
 
         int spawnAttemptCount = 0;
         int maxAttemptsPerFish = 1000; // 무한 루프 방지
