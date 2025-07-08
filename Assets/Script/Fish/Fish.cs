@@ -61,6 +61,7 @@ public abstract class Fish : MonoBehaviour
 
     protected virtual void Start()
     {
+        curHP = fishData.health;
         float currentMaxSpeed = 0f;
 
         if (fishData != null)
@@ -397,12 +398,27 @@ public abstract class Fish : MonoBehaviour
 
     protected void UpdateRotation()
     {
-        if (velocity.sqrMagnitude < 0.001f || fishData == null) return;
+        //if (velocity.sqrMagnitude < 0.001f || fishData == null) return;
 
-        float targetAngle = Mathf.Atan2(velocity.y, velocity.x) * Mathf.Rad2Deg;
-        Quaternion targetRotation = Quaternion.Euler(0, 0, targetAngle);
+        //float targetAngle = Mathf.Atan2(velocity.y, velocity.x) * Mathf.Rad2Deg;
+        //Quaternion targetRotation = Quaternion.Euler(0, 0, targetAngle);
 
-        transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, fishData.rotationSpeed * Time.deltaTime);
+        //transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, fishData.rotationSpeed * Time.deltaTime);
+
+
+        // 플레이어를 발견했을때 속도 가중치 만큼 회전에도 가중치 적용
+        if (velocity.sqrMagnitude > 0.01f)
+        {
+            float targetAngle = Mathf.Atan2(velocity.y, velocity.x) * Mathf.Rad2Deg;
+
+            float currentRotationSpeed = fishData.rotationSpeed;
+            if (_isActingOnPlayer) // 플레이어에게 반응 중일 때 회전 속도에 가중치 적용 
+            {
+                currentRotationSpeed = fishData.actionSpeedMultiplier;
+            }
+
+            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.Euler(0, 0, targetAngle), Time.deltaTime * currentRotationSpeed);
+        }
     }
 
     protected Vector2 Alignment(IEnumerable<Fish> fishAgents)
