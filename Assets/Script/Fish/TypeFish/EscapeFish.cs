@@ -56,15 +56,11 @@ public class EscapeFish : Fish
         Debug.Log($"{gameObject.name}: Player Detected! Transitioning to Escape state.");
     }
 
-    public override void TakeDamage(Transform damageDealer)
+    public override void TakeDamage(Transform damageDealer, float damage)
     {
-        if (!_isActingOnPlayer && !_isOnActionCooldown && damageDealer.CompareTag("Player"))
-        {
-            Debug.Log($"{gameObject.name} (EscapeFish) received damage from {damageDealer.name}. Initiating escape!");
-            _isDamagedReacting = true;
-            _playerTransform = damageDealer;
-            velocity = Vector2.zero;
-        }
+        base.TakeDamage(damageDealer, damage);
+        //Debug.Log($"{gameObject.name} (EscapeFish) received damage from {damageDealer.name}. Initiating escape!");
+        ImmediateDetection(damageDealer);
     }
 
     protected override void HandleDamagedReaction()

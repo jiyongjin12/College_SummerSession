@@ -52,7 +52,7 @@ public abstract class Gun_Base : MonoBehaviour
 
     [Header("Pos")]
     public Vector3 _startpos;
-    protected Vector3 dir_gun;
+    [SerializeField] protected Vector3 dir_gun;
     protected float rot;
 
     [Header("Inhale")]
@@ -169,6 +169,7 @@ public abstract class Gun_Base : MonoBehaviour
         suckDirection = dir_gun;
 
         if (!Input.GetMouseButton(1)) { return; }
+        Debug.Log("TRY INHALING");
         FindObj();
     }
 
@@ -182,8 +183,8 @@ public abstract class Gun_Base : MonoBehaviour
             Vector2 toTarget = (col.transform.position - suckPoint.position).normalized;
 
             float angle = Vector2.Angle(suckDirection.normalized, toTarget);
-
-            if (angle < fieldOfView / 2f)
+            col.TryGetComponent<Fish>(out var fish);
+            if (angle < fieldOfView / 2f && fish.isDie)
             {
                 Transform target = col.transform;
                 //target.position = Vector2.MoveTowards(target.position, suckPoint.position, enemymoveSpeed * Time.deltaTime);

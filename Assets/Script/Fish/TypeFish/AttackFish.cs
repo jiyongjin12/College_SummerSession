@@ -60,15 +60,11 @@ public class AttackFish : Fish
         //Debug.Log($"{gameObject.name}: Player Detected! Transitioning to Chase state.");
     }
 
-    public override void TakeDamage(Transform damageDealer)
+    public override void TakeDamage(Transform damageDealer, float damage)
     {
-        if (!_isActingOnPlayer && !_isOnActionCooldown && damageDealer.CompareTag("Player"))
-        {
-            Debug.Log($"{gameObject.name} (AttackFish) received damage from {damageDealer.name}. Initiating counter-attack!");
-            _isDamagedReacting = true;
-            _playerTransform = damageDealer;
-            velocity = Vector2.zero;
-        }
+        base.TakeDamage(damageDealer, damage);
+        //Debug.Log($"{gameObject.name} (AttackFish) received damage from {damageDealer.name}. Initiating counter-attack!");
+        ImmediateDetection(damageDealer);
     }
 
     protected override void HandleDamagedReaction()

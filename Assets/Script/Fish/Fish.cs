@@ -7,6 +7,9 @@ public abstract class Fish : MonoBehaviour
     public FishData fishData;
     public Boid parentBoid;
     public Biome currentBiome;
+    public bool isDie;
+    //임시 HP
+    [SerializeField] public float curHP;
 
     protected Transform _playerTransform;
     protected bool _isPlayerDetected = false;
@@ -77,7 +80,7 @@ public abstract class Fish : MonoBehaviour
     {
         acceleration = Vector2.zero;
 
-        if (fishData == null) return;
+        if (fishData == null || isDie) return;
 
         if (_currentAttackCooldownTimer > 0)
         {
@@ -164,15 +167,32 @@ public abstract class Fish : MonoBehaviour
     /// <summary>
     /// 플레이어에게 데미지를 받았을 때 호출되는 메서드.
     /// </summary>
-    public virtual void TakeDamage(Transform damageDealer)
+    public virtual void TakeDamage(Transform damageDealer, float damage)
     {
-        Debug.Log($"{gameObject.name} took damage from {damageDealer.name}. Default Fish reaction.");
+        Debug.Log($"DAMAGE : {damage}!!!");
+        curHP -= damage;
+        if (curHP <= 0) { Debug.Log("die");  isDie = true;}
+        //Debug.Log($"{gameObject.name} took damage from {damageDealer.name}. Default Fish reaction.");
+    }
+
+    /// <summary>
+    /// 플레이어 즉시 감지
+    /// </summary>
+    protected virtual void ImmediateDetection(Transform damageDealer)
+    {
+        if (!_isActingOnPlayer && !_isOnActionCooldown && damageDealer.CompareTag("Player"))
+        {
+            _isDamagedReacting = true;
+            _playerTransform = damageDealer;
+            velocity = Vector2.zero;
+        }
     }
 
     /// <summary>
     /// 피격 시 반응을 처리하는 추상 메서드. 자식 클래스에서 오버라이드.
     /// </summary>
     protected abstract void HandleDamagedReaction();
+
 
     /// <summary>
     /// 플레이어가 감지되었거나 피격 반응 시 호출되는 추상 메서드.

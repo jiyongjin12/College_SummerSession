@@ -25,11 +25,11 @@ public abstract class Bullet_Base : MonoBehaviour
     }
 
     private void OnCollisionEnter2D(Collision2D hit) {
-        // if (!isHit && hit.collider.TryGetComponent<Enemy_Base>(out var e_hit))
-        // {
-        //     e_hit.Enemy_Damage(damage);
-        //     Hit_Event();
-        // }
+        if (!isHit && hit.collider.TryGetComponent<Fish>(out var e_hit))
+        {
+            e_hit.TakeDamage(this.transform, damage);
+            Hit_Event();
+        }
         // else if (hit.collider.CompareTag("Wall"))
         // {
         //     Hit_Wall(hit);

@@ -19,6 +19,7 @@ public class Player : MonoBehaviour
     [Header("Status")]
     public int HP;
     public float moveSpeed;
+    public int capacity;
 
     [Header("Weapon")]
     public Transform gunPos;

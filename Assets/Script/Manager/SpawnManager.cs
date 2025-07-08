@@ -157,7 +157,7 @@ public class SpawnManager : MonoBehaviour
                 return;
             }
 
-            Boid newBoid = Instantiate(boidPrefab, spawnPos, Quaternion.identity);
+            Boid newBoid = Instantiate(boidPrefab, spawnPos, Quaternion.identity, this.transform);
             newBoid.targetFishData = fishToSpawn;
             newBoid.currentBiome = boidBiome; 
             // FishData의 scopeOfActivity를 Boid 군집의 초기 원형 범위로 설정 (SpawnManager에서 결정)

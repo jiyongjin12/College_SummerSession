@@ -97,7 +97,13 @@ public class NeutralFish : Fish
         // velocity는 이미 0이지만, 다음 프레임부터 UpdateVelocity에서 다시 군집 속도 계산 시작
     }
 
-    public override void TakeDamage(Transform damageDealer)
+    public override void TakeDamage(Transform damageDealer, float damage)
+    {
+        base.TakeDamage(damageDealer, damage);
+        ImmediateDetection(damageDealer);
+    }
+
+    protected override void ImmediateDetection(Transform damageDealer)
     {
         // 피격 시에는 다른 상태(주시 포함)보다 우선적으로 반응
         if (!_isActingOnPlayer && !_isOnActionCooldown && damageDealer.CompareTag("Player"))
