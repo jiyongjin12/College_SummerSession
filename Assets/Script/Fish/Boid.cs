@@ -1,29 +1,39 @@
 using System.Collections.Generic;
 using UnityEngine;
+using Unity.Collections;
+using Unity.Mathematics;
 
 public class Boid : MonoBehaviour
 {
-    [Header("군집 설정")]
     public FishData targetFishData;
+    public Biome currentBiome;
 
-    public Biome currentBiome; // 소환 바이옴
+    // 개별 물고기 프리팹 (Fish.cs를 상속하는 프리팹이어야 함)
+    //public GameObject fishPrefab; // FishData에 있는 fishPrefab 사용 예정이므로 이 변수는 필요없을 수도 있음
 
-    // 이 Boid 군집 안의 모든 Fish들이 활동할 원형 경계 정보
-    private Vector2 flockingBoundsCenter;
-    private float flockingBoundsRadius; // 원형 경계의 반지름
+    private Vector2 _flockingBoundsCenter;
+    private float _flockingBoundsRadius;
 
-    // Boid의 SetFlockingBounds는 SpawnManager에서 Boid 스폰 직후 호출될 수 있움
-    // 하지만 Boid 내에서 Fish 스폰 시점에 이 값이 필요하므로, Boid의 Start에서 Fish를 스폰
+    // Boid의 경계를 설정하는 메서드 (SpawnManager에서 호출)
     public void SetFlockingBounds(Vector2 center, float radius)
     {
-        flockingBoundsCenter = center;
-        flockingBoundsRadius = radius;
+        _flockingBoundsCenter = center;
+        _flockingBoundsRadius = radius;
     }
 
     void Start()
     {
         if (targetFishData == null)
         {
+            Debug.LogError("Boid에 targetFishData가 할당되지 않았습니다. Boid를 파괴합니다.");
+            Destroy(gameObject);
+            return;
+        }
+
+        // targetFishData.fishPrefab을 사용하도록 변경
+        if (targetFishData.fishPrefab == null)
+        {
+            Debug.LogError($"Boid에 할당된 FishData ({targetFishData.name})에 Fish Prefab이 할당되지 않았습니다. Boid를 파괴합니다.");
             Destroy(gameObject);
             return;
         }
@@ -31,20 +41,17 @@ public class Boid : MonoBehaviour
         SpawnIndividualFish();
     }
 
-    // 이 Boid 군집 내부에 개별 Fish들을 포아송 디스크 샘플링 방식으로 스폰
     private void SpawnIndividualFish()
     {
-        if (targetFishData.fishPrefab == null)
-        {
-            return;
-        }
+        Vector2 tempRectSize = new Vector2(_flockingBoundsRadius * 2, _flockingBoundsRadius * 2);
+        Vector2 tempRectOffset = _flockingBoundsCenter - new Vector2(_flockingBoundsRadius, _flockingBoundsRadius);
 
-        // 포아송 디스크 샘플링을 위해 임시적인 사각형 영역으로 변환
-        Vector2 tempRectSize = new Vector2(flockingBoundsRadius * 2, flockingBoundsRadius * 2);
-        Vector2 tempRectOffset = flockingBoundsCenter - new Vector2(flockingBoundsRadius, flockingBoundsRadius);
+        float individualMinSeparation = 0.5f; // 개별 물고기 간 최소 간격
 
-        // 개별 Fish 간 최소 이격 거리는 FishData에 없으므로 임의의 값 사용 또는 추가 필요
-        float individualMinSeparation = 0.5f;
+        // UnityEngine.Random을 사용하기 위한 시드 초기화는 Start() 또는 Awake()에서 한 번만 하는 것이 좋습니다.
+        // 여기서는 PoissonDiskSampling2D 내부에서 Random을 사용하므로, 
+        // PoissonDiskSampling2D 클래스 자체를 수정하는 것이 더 적절합니다.
+        // UnityEngine.Random.InitState(System.Environment.TickCount); 
 
         List<Vector2> spawnPoints = PoissonDiskSampling2D.GeneratePoints(
             individualMinSeparation,
@@ -56,49 +63,62 @@ public class Boid : MonoBehaviour
         int spawnedCount = 0;
         foreach (Vector2 point in spawnPoints)
         {
-            // 스폰 포인트가 실제 원형 범위 내에 있는지 다시 확인
-            if (Vector2.Distance(point, flockingBoundsCenter) > flockingBoundsRadius)
+            // 군집 반경 내에 있는 경우에만 스폰
+            if (Vector2.Distance(point, _flockingBoundsCenter) > _flockingBoundsRadius)
             {
                 continue;
             }
 
-            if (spawnedCount >= targetFishData.fishUnitCount) break;
+            if (spawnedCount >= targetFishData.fishUnitCount) break; // FishData에 정의된 개수만큼만 스폰
 
             Vector3 spawnPosition = new Vector3(point.x, point.y, 0f);
 
-            // FishData에 연결된 프리팹을 사용하여 개별 Fish 인스턴스 생성
+            // targetFishData.fishPrefab 사용
             GameObject fishObj = Instantiate(targetFishData.fishPrefab, spawnPosition, Quaternion.identity, this.transform);
 
             Fish individualFish = fishObj.GetComponent<Fish>();
             if (individualFish != null)
             {
-                individualFish.fishData = targetFishData; // FishData 할당
-                individualFish.parentBoid = this; // 자기 자신 참조
-                individualFish.currentBiome = this.currentBiome; // 스폰 바이옴 정보 넘기기
-                individualFish.SetFlockingBounds(flockingBoundsCenter, flockingBoundsRadius); // 개별 Fish에게 원형 경계 정보 전달
+                individualFish.fishData = targetFishData;
+                individualFish.parentBoid = this;
+                individualFish.currentBiome = this.currentBiome;
+                individualFish.SetFlockingBounds(_flockingBoundsCenter, _flockingBoundsRadius);
+
+                // FishSimulationManager에 개별 Fish 등록
+                if (FishSimulationManager.Instance != null)
+                {
+                    FishSimulationManager.Instance.RegisterFish(individualFish);
+                }
             }
             else
             {
+                Debug.LogWarning($"Spawned object {fishObj.name} does not have a Fish component. Destroying it.");
                 Destroy(fishObj);
                 continue;
             }
             spawnedCount++;
         }
-
-        
     }
 
-    // 디버그를 위한 Gizmo (군집 경계 시각화 - 원형)
-    private void OnDrawGizmosSelected()
+    private void OnDestroy()
     {
-        if (Application.isPlaying && targetFishData != null)
-        {
-            Gizmos.color = Color.cyan;
-            Gizmos.DrawWireSphere(transform.position, targetFishData.scopeOfActivity);
-        }
+        // Boid가 파괴될 때, 그 자식인 개별 물고기들도 같이 파괴됩니다.
+        // 각 Fish의 OnDestroy에서 FishSimulationManager.Instance.UnregisterFish(this)가 호출되므로
+        // Boid에서는 특별히 추가적인 언레지스터 로직이 필요하지 않습니다.
+    }
+
+    // Gizmos for Debugging
+    void OnDrawGizmosSelected()
+    {
+        if (targetFishData == null) return;
+
+        Gizmos.color = Color.cyan;
+        Gizmos.DrawWireSphere(_flockingBoundsCenter, _flockingBoundsRadius);
     }
 }
 
+// PoissonDiskSampling2D 클래스: 이 클래스가 Boid.cs 파일에 함께 있거나,
+// 별도의 파일로 존재한다면 해당 파일의 Random 사용 부분을 수정해야 합니다.
 public static class PoissonDiskSampling2D
 {
     public static List<Vector2> GeneratePoints(float radius, Vector2 sampleRegionSize, int rejectionSamples = 30, Vector2 offset = default(Vector2))
@@ -115,14 +135,16 @@ public static class PoissonDiskSampling2D
 
         while (spawnPoints.Count > 0)
         {
-            int spawnIndex = Random.Range(0, spawnPoints.Count);
+            // 여기에서 UnityEngine.Random을 명시적으로 사용합니다.
+            int spawnIndex = UnityEngine.Random.Range(0, spawnPoints.Count);
             Vector2 spawnCenter = spawnPoints[spawnIndex];
             bool found = false;
 
             for (int i = 0; i < rejectionSamples; i++)
             {
-                float angle = Random.value * Mathf.PI * 2;
-                float r = Random.Range(radius, 2 * radius);
+                // 여기에서 UnityEngine.Random을 명시적으로 사용합니다.
+                float angle = UnityEngine.Random.value * Mathf.PI * 2;
+                float r = UnityEngine.Random.Range(radius, 2 * radius);
                 Vector2 candidate = spawnCenter + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * r;
 
                 if (candidate.x >= 0 && candidate.x < sampleRegionSize.x && candidate.y >= 0 && candidate.y < sampleRegionSize.y)

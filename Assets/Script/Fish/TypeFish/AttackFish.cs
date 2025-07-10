@@ -2,26 +2,24 @@ using UnityEngine;
 
 public class AttackFish : Fish
 { // 특수 처리
-
     protected override void Update()
     {
         base.Update();
 
-        // AttackFish는 플레이어 감지 시 추격 행동을 시작합니다.
-        // Fish.cs의 Update()에서 이미 DetectPlayer()를 호출하고 HandlePlayerDetection()을 처리합니다.
-        // 여기서 추가적인 DetectPlayer() 호출은 필요 없습니다.
-
-        // AttackFish는 _isActingOnPlayer 상태에서 HandlePlayerInteraction()을 통해 추적/공격하므로
-        // _isPlayerDetected (주시 상태)와 겹칠 필요가 없습니다.
+        // Fish.cs의 Update()에서 이미 모든 상태 (_isActingOnPlayer, _isOnActionCooldown, _isDamagedReacting)를
+        // 처리하고 있으므로, 여기서는 추가적인 Update 로직이 거의 필요 없습니다.
+        // 특정 AttackFish만의 고유한 로직이 필요하다면 여기에 추가합니다.
     }
 
-    // Fish.cs의 DetectPlayer()를 오버라이드하여 플레이어 감지 로직 구현
     protected override bool DetectPlayer()
     {
-        // 이미 플레이어와 상호작용 중이거나 쿨다운 중, 피격 반응 중이라면 다시 감지할 필요 없음
-        if (_isActingOnPlayer || _isOnActionCooldown || _isDamagedReacting) return false;
+        // 변수명 변경: _isActingOnPlayer -> IsActingOnPlayer (프로퍼티)
+        // _isOnActionCooldown -> IsOnActionCooldown (프로퍼티)
+        // _isDamagedReacting -> IsDamagedReacting (프로퍼티)
+        if (IsActingOnPlayer || IsOnActionCooldown || IsDamagedReacting) return false;
 
-        Vector2 forward = velocity.normalized;
+        // 변수명 변경: velocity -> currentVelocity
+        Vector2 forward = currentVelocity.normalized;
         if (forward.sqrMagnitude < 0.001f) forward = transform.right;
 
         Collider2D[] hitColliders = Physics2D.OverlapCircleAll(transform.position, fishData.playerDetectionRange, playerLayer);
@@ -32,13 +30,18 @@ public class AttackFish : Fish
             {
                 Vector2 directionToPlayer = (hit.transform.position - transform.position).normalized;
                 float angleToPlayer = Vector2.Angle(forward, directionToPlayer);
-                float detectionAngleHalf = 60f;
+                float detectionAngleHalf = 60f; // 플레이어 감지 시야각 (전방 120도)
 
                 if (angleToPlayer <= detectionAngleHalf)
                 {
+                    // 장애물 체크: 플레이어가 시야에 들어왔지만, 중간에 장애물이 있는지 확인
+                    // RaycastHit2D hitCheck = Physics2D.Raycast(transform.position, directionToPlayer, fishData.playerDetectionRange, obstacleLayer);
+                    // 특정 레이어를 무시하는 RaycastAll을 사용하거나, 더 정교한 로직이 필요할 수 있음
+                    // 여기서는 일단 간략화된 단일 Raycast로 처리
                     RaycastHit2D hitCheck = Physics2D.Raycast(transform.position, directionToPlayer, fishData.playerDetectionRange, obstacleLayer);
-                    if (hitCheck.collider != null)
+                    if (hitCheck.collider != null && hitCheck.collider.transform != hit.transform)
                     {
+                        // 플레이어와 본인 사이의 장애물이 플레이어가 아니라면 무시
                         continue;
                     }
 
@@ -51,11 +54,11 @@ public class AttackFish : Fish
         return false;
     }
 
-    // 플레이어가 감지되었을 때 공통 처리 후 AttackFish만의 추가 행동 초기화
     protected override void HandlePlayerDetection()
     {
-        base.HandlePlayerDetection(); // Fish.cs의 공통 감지 로직 호출 (_isPlayerDetected = true, velocity = zero)
-        _isActingOnPlayer = true; // 감지 즉시 추격 행동 시작
+        base.HandlePlayerDetection();
+        // 변수명 변경: _isActingOnPlayer -> IsActingOnPlayer (프로퍼티)
+        IsActingOnPlayer = true; // 감지 즉시 추격 행동 시작
         _currentActionTimer = fishData.chaseDuration; // 추격 시간 설정
         //Debug.Log($"{gameObject.name}: Player Detected! Transitioning to Chase state.");
     }
@@ -69,10 +72,13 @@ public class AttackFish : Fish
 
     protected override void HandleDamagedReaction()
     {
-        _isPlayerDetected = true; // 피격 시에도 플레이어 인식
-        _isActingOnPlayer = true; // 행동 시작
+        // 변수명 변경: _isPlayerDetected -> _isPlayerDetected (protected 필드)
+        // _isActingOnPlayer -> IsActingOnPlayer (프로퍼티)
+        // _isDamagedReacting -> IsDamagedReacting (프로퍼티)
+        _isPlayerDetected = true; // 피격 시에도 플레이어 인식 (private 필드)
+        IsActingOnPlayer = true; // 행동 시작
         _currentActionTimer = fishData.chaseDuration;
-        _isDamagedReacting = false;
+        IsDamagedReacting = false; // 반응 처리 후 플래그 해제
 
         HandlePlayerInteraction();
     }
@@ -90,7 +96,8 @@ public class AttackFish : Fish
 
         if (distanceToPlayer <= fishData.attackRange)
         {
-            velocity = Vector2.zero;
+            // 변수명 변경: velocity -> currentVelocity
+            currentVelocity = Vector2.zero;
             _isAttacking = true;
 
             if (_currentAttackCooldownTimer <= 0)
@@ -104,8 +111,13 @@ public class AttackFish : Fish
             _isAttacking = false;
             Vector2 directionToPlayer = ((Vector2)_playerTransform.position - (Vector2)transform.position).normalized;
             Vector2 desiredVelocity = directionToPlayer * fishData.normalSpeed * fishData.actionSpeedMultiplier;
-            acceleration += Steer(desiredVelocity) * fishData.boundsAvoidanceWeight;
-            ObstacleAvoidance();
+
+            // Steer 메서드의 시그니처에 맞게 인자 추가
+            // acceleration 변수명 변경: acceleration -> currentAcceleration
+            currentAcceleration += Steer(desiredVelocity, currentVelocity, fishData.flockMaxForce);
+
+            // Job System에서 처리되므로 ObstacleAvoidance() 직접 호출 제거
+            // ObstacleAvoidance(); 
         }
 
         Debug.DrawLine(transform.position, (Vector3)_playerTransform.position, Color.green);
@@ -114,6 +126,7 @@ public class AttackFish : Fish
     private void Attack()
     {
         Debug.Log($"{gameObject.name} (AttackFish) attacks Player for {fishData.attackDamage} damage!");
+        // 공격 로직 (예: 데미지 적용, 애니메이션 트리거 등)
     }
 
     protected override void OnDrawGizmosSelected()
