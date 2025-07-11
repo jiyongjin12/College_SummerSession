@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using UnityEditor.Experimental.GraphView;
 using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 
 public class Player : MonoBehaviour
@@ -11,6 +12,7 @@ public class Player : MonoBehaviour
     [Header("Objects")]
     public VariableJoystick moveJoystick;
     public VariableJoystick targetJoystick;
+    public Button interactionButton;
     public RectTransform target;
     Rigidbody2D rigid;
     Animator anim;
@@ -18,8 +20,11 @@ public class Player : MonoBehaviour
 
     [Header("Status")]
     public int HP;
+    public int maxHP;
+    public int O2;
     public float moveSpeed;
     public int capacity;
+    public List<int> curFishList = new();
 
     [Header("Weapon")]
     public Transform gunPos;
@@ -52,6 +57,7 @@ public class Player : MonoBehaviour
     {
         rigid = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
+        interactionButton.onClick.AddListener(FireModeChangeButton);
     }
 
     void Update()
@@ -61,18 +67,18 @@ public class Player : MonoBehaviour
         if (targetJoystick.HendleMove != Vector2.zero) target.anchoredPosition = targetJoystick.HendleMove * radius;
 
         Move();
-        curWeapon.UsingGun(fireMode);
+        if(targetJoystick.HendleInput.magnitude > 0.5f) curWeapon.UsingGun(fireMode);
     }
 
-    public void ChangeGunMode(){ fireMode = !fireMode; } 
+    public void FireModeChangeButton() { fireMode = !fireMode; }
 
     void Move()
     {
         //if (isSlow) return;
-        // x = Input.GetAxisRaw("Horizontal");
-        // y = Input.GetAxisRaw("Vertical");
-        x = moveJoystick.Horizontal;
-        y = moveJoystick.Vertical;
+        x = Input.GetAxisRaw("Horizontal");
+        y = Input.GetAxisRaw("Vertical");
+        // x = moveJoystick.Horizontal;
+        // y = moveJoystick.Vertical;
 
         dir = target.position - pos;
         float z = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
@@ -86,4 +92,5 @@ public class Player : MonoBehaviour
     {
 
     }
+
 }

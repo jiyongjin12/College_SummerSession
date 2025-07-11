@@ -31,9 +31,9 @@ public abstract class Gun_Base : MonoBehaviour
 
     [Header("Ammo")]
     public int magazine;
-    public int cur_ammo;
-    public int remain_ammo;
-    [SerializeField] int max_ammo;
+    public int curAmmo;
+    public int remainAmmo;
+    public int maxAmmo;
 
     [Header("Min : Max")]
     [SerializeField] protected int dir_ran_min;
@@ -104,10 +104,10 @@ public abstract class Gun_Base : MonoBehaviour
         if (cur_rerode_delay > max_rerode_delay && isRerode)
         {
             isRerode = false;
-            if (remain_ammo > magazine)
-                cur_ammo = magazine;
+            if (remainAmmo > magazine)
+                curAmmo = magazine;
             else
-                cur_ammo = remain_ammo;
+                curAmmo = remainAmmo;
 
             if (isFest)
             {
@@ -124,7 +124,7 @@ public abstract class Gun_Base : MonoBehaviour
 
         if (!isRerode)
         {
-            if ((cur_ammo == 0 && Input.GetMouseButtonDown(0)))
+            if ((curAmmo == 0 && Input.GetMouseButtonDown(0)))
             {
                 isRerode = true;
                 //SoundManager.Instance.Sound(relode, false, 1);
@@ -169,7 +169,6 @@ public abstract class Gun_Base : MonoBehaviour
         suckDirection = dir_gun;
 
         if (!Input.GetMouseButton(1)) { return; }
-        Debug.Log("TRY INHALING");
         FindObj();
     }
 
@@ -198,6 +197,8 @@ public abstract class Gun_Base : MonoBehaviour
 
         foreach (Collider2D col in InhaleCollider)
         {
+            if (col.TryGetComponent<Fish>(out var fish)) p.curFishList.Add(fish.fishData.fishID);
+            else Debug.Log("This Obj is TestFish? Fish Component is NULL");
             Destroy(col.gameObject);
         }
 

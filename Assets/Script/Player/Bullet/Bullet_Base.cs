@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public abstract class Bullet_Base : MonoBehaviour
@@ -18,13 +20,19 @@ public abstract class Bullet_Base : MonoBehaviour
         damage = _damage;
     }
 
+    public void Init(float _lifeTime, float _moveSpeed)
+    {
+        lifeTime = _lifeTime;
+        moveSpeed = _moveSpeed;
+    }
+
     protected virtual void Update()
     {
         cur_lifeTime += Time.deltaTime;
         if (cur_lifeTime > lifeTime) Destroy(gameObject);
     }
 
-    private void OnCollisionEnter2D(Collision2D hit) {
+    protected virtual void OnCollisionEnter2D(Collision2D hit) {
         if (!isHit && hit.collider.TryGetComponent<Fish>(out var e_hit))
         {
             e_hit.TakeDamage(this.transform, damage);

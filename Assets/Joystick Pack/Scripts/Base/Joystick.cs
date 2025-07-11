@@ -25,6 +25,7 @@ public class Joystick : MonoBehaviour, IPointerDownHandler, IDragHandler, IPoint
     public bool SnapX { get { return snapX; } set { snapX = value; } }
     public bool SnapY { get { return snapY; } set { snapY = value; } }
     public Vector2 HendleMove { get { return input.normalized * handleRange; } }
+    public Vector2 HendleInput { get { return input; } }
 
     [SerializeField] private float handleRange = 1;
     [SerializeField] private float deadZone = 0;
