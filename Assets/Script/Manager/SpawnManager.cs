@@ -1,24 +1,24 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SpawnManager : MonoBehaviour 
+public class SpawnManager : MonoBehaviour
 {
     // 싱글톤
-    public static SpawnManager Instance { get; private set; } // 싱글톤으로 쉽게 접근
+    public static SpawnManager Instance { get; private set; }
 
     [Header("스폰할 물고기 유닛 데이터")]
-    public List<SpawnList> spawnFishUnitData; // 인스펙터에서 설정할 스폰 리스트
+    public List<SpawnList> spawnFishUnitData;
 
     [Header("군집 프리팹")]
-    public Boid boidPrefab; // Boid 스크립트가 붙은 프리팹 (인스턴스화할 대상)
+    public Boid boidPrefab;
 
     [Header("포아송 디스크 샘플링")]
-    public float minSpawnDistance = 4f; // 물고기(군집) 간 최소 이격 거리
-    public int rejectionSamples = 30; // 한 지점을 찾기 위해 시도할 최대 횟수
+    public float minSpawnDistance = 4f;
+    public int rejectionSamples = 30;
 
-    public LayerMask wallLayer; // 벽 감지 
+    public LayerMask wallLayer;
 
-    private List<Vector3> debugSpawnPoints = new List<Vector3>(); // 기즈모용 스폰 위치 저장
+    private List<Vector3> debugSpawnPoints = new List<Vector3>();
 
     void Awake()
     {
@@ -33,7 +33,6 @@ public class SpawnManager : MonoBehaviour
 
     void Start()
     {
-        // 게임 시작 시 모든 물고기 군집 소환
         SpawnAllFishUnits();
     }
 
@@ -55,32 +54,21 @@ public class SpawnManager : MonoBehaviour
         }
     }
 
-    // 지정된 FishData를 사용하여 Boid 군집을 설정된 수만큼 소환
-    // 소환 위치는 해당 물고기의 수심 및 서식지 조건에 맞게 포아송 디스크 샘플링으로 결정
-    // Z축은 항상 0으로 고정
     public void SpawnFishBoids(FishData fishToSpawn, int count)
     {
         List<Vector3> possibleSpawnPositions = new List<Vector3>();
-        //debugSpawnPoints.Clear(); // 새로운 호출마다 초기화
-
         int spawnAttemptCount = 0;
-        int maxAttemptsPerFish = 1000; // 무한 루프 방지
+        int maxAttemptsPerFish = 1000;
 
-        // Y축 수심 범위 계산 (월드 좌표 기준)
-        // Y값이 음수일수록 깊어지므로, minDepth는 Y값이 0에 가까운 음수, maxDepth는 더 음수가 됨
         float worldMinDepthY = -fishToSpawn.minDepth;
         float worldMaxDepthY = -fishToSpawn.maxDepth;
 
-        // 맵의 Y 범위와 물고기의 수심 Y 범위를 교차하여 실제 스폰 가능한 Y 범위 결정
-        // MapManager의 Y=0이 수면이고, Y=-mapSize.y가 바닥이라고 가정
         float mapBottomY = MapManager.Instance.transform.position.y - MapManager.Instance.mapSize.y / 2f;
         float mapTopY = MapManager.Instance.transform.position.y + MapManager.Instance.mapSize.y / 2f;
 
-        // 실제 스폰 가능한 Y 범위: minDepth(얕은 곳)는 Y값이 높고, maxDepth(깊은 곳)는 Y값이 낮음
-        float spawnRangeYMin = Mathf.Max(mapBottomY, worldMaxDepthY); // 더 깊은 Y값 (작은 값)
-        float spawnRangeYMax = Mathf.Min(mapTopY, worldMinDepthY);   // 더 얕은 Y값 (큰 값)
+        float spawnRangeYMin = Mathf.Max(mapBottomY, worldMaxDepthY);
+        float spawnRangeYMax = Mathf.Min(mapTopY, worldMinDepthY);
 
-        // 맵의 X 범위 (월드 좌표 기준)
         float mapWorldMinX = MapManager.Instance.transform.position.x - MapManager.Instance.mapSize.x / 2f;
         float mapWorldMaxX = MapManager.Instance.transform.position.x + MapManager.Instance.mapSize.x / 2f;
 
@@ -91,44 +79,35 @@ public class SpawnManager : MonoBehaviour
         {
             spawnAttemptCount++;
 
-            // 랜덤 월드 좌표 생성 (맵의 X 범위와 물고기의 수심 Y 범위 고려)
             float randomX = Random.Range(mapWorldMinX, mapWorldMaxX);
             float randomY = Random.Range(spawnRangeYMin, spawnRangeYMax);
-            float randomZ = 0f; 
+            float randomZ = 0f;
 
             Vector3 candidatePosition = new Vector3(randomX, randomY, randomZ);
 
-            // 해당 위치의 바이옴 정보 가져오기
             Biome biomeAtPosition = MapManager.Instance.GetBiomeAtPosition(candidatePosition);
 
             if (biomeAtPosition == null)
             {
-                // 맵 범위를 벗어난 경우 (MapManager.GetBiomeAtPosition에서 이미 체크)
                 continue;
             }
 
-            // 물고기의 서식지(FishHabitat)가 현재 바이옴의 HabitatType에 포함되는지 확인
             bool habitatMatches = fishToSpawn.habitats.Contains(biomeAtPosition.habitatType);
 
             if (!habitatMatches)
             {
-                continue; // 서식지가 맞지 않으면 다음 시도
-            }
-
-            float checkRadius = 2f; // 벽에서 떨어질 만큼의 반지름
-            if (Physics2D.OverlapCircle(candidatePosition, checkRadius, wallLayer))
-            {
-                // 콜라이더와 겹치면 다음 시도
-                //Debug.Log($"Spawn attempt at {candidatePosition} failed due to wall collision.");
                 continue;
             }
 
-            // 포아송 디스크 샘플링: 기존 소환 위치들과 최소 거리 유지
+            float checkRadius = 2f;
+            if (Physics2D.OverlapCircle(candidatePosition, checkRadius, wallLayer))
+            {
+                continue;
+            }
+
             bool tooClose = false;
             foreach (Vector3 existingPos in possibleSpawnPositions)
             {
-                // Z축이 0으로 고정되었으므로 2D 평면 거리 계산과 동일해짐
-                //if (Vector3.Distance(candidatePosition, existingPos) < fishToSpawn.scopeOfActivity * 2)
                 if (Vector3.Distance(candidatePosition, existingPos) < minSpawnDistance)
                 {
                     tooClose = true;
@@ -138,15 +117,13 @@ public class SpawnManager : MonoBehaviour
 
             if (!tooClose)
             {
-                // 유효한 위치를 찾으면 리스트에 추가
                 possibleSpawnPositions.Add(candidatePosition);
-                debugSpawnPoints.Add(candidatePosition); // 기즈모에 사용할 좌표 저장
-                spawnedBiomesForBoids.Add(biomeAtPosition); // biom저장
+                debugSpawnPoints.Add(candidatePosition);
+                spawnedBiomesForBoids.Add(biomeAtPosition);
             }
         }
 
-        // 유효한 위치에 Boid 프리팹 인스턴스화
-        for (int i = 0; i < possibleSpawnPositions.Count; i++) // forEach 대신 for 루프 사용
+        for (int i = 0; i < possibleSpawnPositions.Count; i++)
         {
             Vector3 spawnPos = possibleSpawnPositions[i];
             Biome boidBiome = spawnedBiomesForBoids[i]; // 해당 Boid의 Biome 가져오기
@@ -159,9 +136,11 @@ public class SpawnManager : MonoBehaviour
 
             Boid newBoid = Instantiate(boidPrefab, spawnPos, Quaternion.identity, this.transform);
             newBoid.targetFishData = fishToSpawn;
-            newBoid.currentBiome = boidBiome; 
-            // FishData의 scopeOfActivity를 Boid 군집의 초기 원형 범위로 설정 (SpawnManager에서 결정)
-            newBoid.SetFlockingBounds(spawnPos, fishToSpawn.scopeOfActivity);
+            newBoid.currentBiome = boidBiome; // Boid에 바이옴 정보 할당 (Start에서 활용됨)
+
+            // ===== 변경: SetBoidActivityBounds 호출 (이제는 Boid의 활동 영역을 의미) =====
+            // fishToSpawn.scopeOfActivity는 개별 물고기의 활동 범위로, Boid의 활동 영역 반경으로 적합
+            newBoid.SetBoidActivityBounds(spawnPos, fishToSpawn.scopeOfActivity);
         }
 
         if (possibleSpawnPositions.Count < count)
@@ -176,8 +155,8 @@ public class SpawnManager : MonoBehaviour
 
         foreach (Vector3 pos in debugSpawnPoints)
         {
-            Gizmos.DrawWireSphere(pos, minSpawnDistance * 0.5f); // 최소 거리 반지름의 반으로 작은 원 그리기
-            Gizmos.DrawSphere(pos, 0.1f); // 중심점
+            Gizmos.DrawWireSphere(pos, minSpawnDistance * 0.5f);
+            Gizmos.DrawSphere(pos, 0.1f);
         }
     }
 }

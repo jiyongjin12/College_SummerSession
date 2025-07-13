@@ -1259,10 +1259,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveJoystick: {fileID: 2038005319}
   targetJoystick: {fileID: 971920617}
+  interactionButton: {fileID: 415011363}
   target: {fileID: 1396614334}
   HP: 10
+  maxHP: 0
+  O2: 0
   moveSpeed: 5
   capacity: 0
+  curFishList: 
   gunPos: {fileID: 441254485}
   curWeapon: {fileID: 1414441839}
   isActive: 1
@@ -3225,9 +3229,9 @@ MonoBehaviour:
   max_rerode_delay: 1
   minus_rerode_delay: 1
   magazine: 10
-  cur_ammo: 1000
-  remain_ammo: 10000
-  max_ammo: 1000
+  curAmmo: 0
+  remainAmmo: 0
+  maxAmmo: 0
   dir_ran_min: 1
   dir_ran_max: 1
   isActive: 1

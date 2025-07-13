@@ -1,24 +1,22 @@
 using System.Collections.Generic;
 using UnityEngine;
-using Unity.Collections;
-using Unity.Mathematics;
+using Unity.Collections; // 현재 Boid 스크립트에서는 직접 사용되지 않지만, Unity.Mathematics와 함께 습관적으로 포함될 수 있습니다.
+using Unity.Mathematics; // 현재 Boid 스크립트에서는 직접 사용되지 않지만, 필요에 따라 사용될 수 있습니다.
 
 public class Boid : MonoBehaviour
 {
     public FishData targetFishData;
-    public Biome currentBiome;
+    public Biome currentBiome; // 이 Boid가 스폰될 Biome 정보 (SpawnManager에서 할당)
 
-    // 개별 물고기 프리팹 (Fish.cs를 상속하는 프리팹이어야 함)
-    //public GameObject fishPrefab; // FishData에 있는 fishPrefab 사용 예정이므로 이 변수는 필요없을 수도 있음
+    // 이 Boid가 스폰한 개별 물고기들이 활동할 영역 (Boid의 활동 경계)
+    private Vector2 _boidActivityCenter;
+    private float _boidActivityRadius;
 
-    private Vector2 _flockingBoundsCenter;
-    private float _flockingBoundsRadius;
-
-    // Boid의 경계를 설정하는 메서드 (SpawnManager에서 호출)
-    public void SetFlockingBounds(Vector2 center, float radius)
+    // Boid의 활동 경계(스폰 영역)를 설정하는 메서드 (SpawnManager에서 호출)
+    public void SetBoidActivityBounds(Vector2 center, float radius)
     {
-        _flockingBoundsCenter = center;
-        _flockingBoundsRadius = radius;
+        _boidActivityCenter = center;
+        _boidActivityRadius = radius;
     }
 
     void Start()
@@ -30,7 +28,6 @@ public class Boid : MonoBehaviour
             return;
         }
 
-        // targetFishData.fishPrefab을 사용하도록 변경
         if (targetFishData.fishPrefab == null)
         {
             Debug.LogError($"Boid에 할당된 FishData ({targetFishData.name})에 Fish Prefab이 할당되지 않았습니다. Boid를 파괴합니다.");
@@ -38,20 +35,28 @@ public class Boid : MonoBehaviour
             return;
         }
 
-        SpawnIndividualFish();
+        // Boid가 활성화되는 시점에 자기가 속한 바이옴의 월드 좌표 경계를 계산
+        Vector2 biomeMinBounds = Vector2.zero;
+        Vector2 biomeMaxBounds = Vector2.zero;
+        if (currentBiome != null && MapManager.Instance != null)
+        {
+            // Biome의 로컬 좌표를 월드 좌표로 변환
+            Vector3 biomeWorldCenter = MapManager.Instance.transform.position + currentBiome.center;
+            Vector3 biomeWorldSize = currentBiome.size; // Biome의 크기가 3D라면 Vector3
+            biomeMinBounds = new Vector2(biomeWorldCenter.x - biomeWorldSize.x / 2f, biomeWorldCenter.y - biomeWorldSize.y / 2f);
+            biomeMaxBounds = new Vector2(biomeWorldCenter.x + biomeWorldSize.x / 2f, biomeWorldCenter.y + biomeWorldSize.y / 2f);
+        }
+
+        SpawnIndividualFish(biomeMinBounds, biomeMaxBounds);
     }
 
-    private void SpawnIndividualFish()
+    private void SpawnIndividualFish(Vector2 biomeMinBounds, Vector2 biomeMaxBounds)
     {
-        Vector2 tempRectSize = new Vector2(_flockingBoundsRadius * 2, _flockingBoundsRadius * 2);
-        Vector2 tempRectOffset = _flockingBoundsCenter - new Vector2(_flockingBoundsRadius, _flockingBoundsRadius);
+        // PoissonDiskSampling은 사각형 영역을 기반으로 하므로, 원형 스폰 영역을 사각형으로 변환
+        Vector2 tempRectSize = new Vector2(_boidActivityRadius * 2, _boidActivityRadius * 2);
+        Vector2 tempRectOffset = _boidActivityCenter - new Vector2(_boidActivityRadius, _boidActivityRadius);
 
         float individualMinSeparation = 0.5f; // 개별 물고기 간 최소 간격
-
-        // UnityEngine.Random을 사용하기 위한 시드 초기화는 Start() 또는 Awake()에서 한 번만 하는 것이 좋습니다.
-        // 여기서는 PoissonDiskSampling2D 내부에서 Random을 사용하므로, 
-        // PoissonDiskSampling2D 클래스 자체를 수정하는 것이 더 적절합니다.
-        // UnityEngine.Random.InitState(System.Environment.TickCount); 
 
         List<Vector2> spawnPoints = PoissonDiskSampling2D.GeneratePoints(
             individualMinSeparation,
@@ -60,11 +65,14 @@ public class Boid : MonoBehaviour
             offset: tempRectOffset
         );
 
+        // 현재 Boid 인스턴스의 고유 ID를 부모 ID로 사용합니다.
+        int boidParentID = this.GetInstanceID();
+
         int spawnedCount = 0;
         foreach (Vector2 point in spawnPoints)
         {
-            // 군집 반경 내에 있는 경우에만 스폰
-            if (Vector2.Distance(point, _flockingBoundsCenter) > _flockingBoundsRadius)
+            // 실제 원형 스폰 영역 내에 있는 경우에만 스폰
+            if (Vector2.Distance(point, _boidActivityCenter) > _boidActivityRadius)
             {
                 continue;
             }
@@ -73,16 +81,21 @@ public class Boid : MonoBehaviour
 
             Vector3 spawnPosition = new Vector3(point.x, point.y, 0f);
 
-            // targetFishData.fishPrefab 사용
             GameObject fishObj = Instantiate(targetFishData.fishPrefab, spawnPosition, Quaternion.identity, this.transform);
 
             Fish individualFish = fishObj.GetComponent<Fish>();
             if (individualFish != null)
             {
                 individualFish.fishData = targetFishData;
-                individualFish.parentBoid = this;
-                individualFish.currentBiome = this.currentBiome;
-                individualFish.SetFlockingBounds(_flockingBoundsCenter, _flockingBoundsRadius);
+                individualFish.parentID = boidParentID;
+
+                // ===== 추가: Fish에게 Boid의 활동 경계 정보 전달 =====
+                individualFish.boidSpawnAreaCenter = _boidActivityCenter;
+                individualFish.boidSpawnAreaRadius = _boidActivityRadius;
+
+                // ===== 추가: Fish에게 바이옴 경계 정보 전달 =====
+                individualFish.biomeWorldMinBounds = biomeMinBounds;
+                individualFish.biomeWorldMaxBounds = biomeMaxBounds;
 
                 // FishSimulationManager에 개별 Fish 등록
                 if (FishSimulationManager.Instance != null)
@@ -102,23 +115,23 @@ public class Boid : MonoBehaviour
 
     private void OnDestroy()
     {
-        // Boid가 파괴될 때, 그 자식인 개별 물고기들도 같이 파괴됩니다.
-        // 각 Fish의 OnDestroy에서 FishSimulationManager.Instance.UnregisterFish(this)가 호출되므로
+        // 각 Fish의 OnDisable에서 FishSimulationManager.Instance.UnregisterFish(this)가 호출되므로
         // Boid에서는 특별히 추가적인 언레지스터 로직이 필요하지 않습니다.
     }
 
-    // Gizmos for Debugging
+    // Gizmos for Debugging (Boid의 활동 경계 시각화)
     void OnDrawGizmosSelected()
     {
         if (targetFishData == null) return;
 
         Gizmos.color = Color.cyan;
-        Gizmos.DrawWireSphere(_flockingBoundsCenter, _flockingBoundsRadius);
+        Gizmos.DrawWireSphere(_boidActivityCenter, _boidActivityRadius);
     }
 }
 
-// PoissonDiskSampling2D 클래스: 이 클래스가 Boid.cs 파일에 함께 있거나,
-// 별도의 파일로 존재한다면 해당 파일의 Random 사용 부분을 수정해야 합니다.
+// PoissonDiskSampling2D 클래스는 변경 사항이 없습니다.
+// 여기서는 UnityEngine.Random을 사용하고 있으므로, Job에서 호출되지 않아야 합니다.
+// (SpawnManager나 Boid와 같은 MonoBehaviour에서만 호출되어야 합니다.)
 public static class PoissonDiskSampling2D
 {
     public static List<Vector2> GeneratePoints(float radius, Vector2 sampleRegionSize, int rejectionSamples = 30, Vector2 offset = default(Vector2))
@@ -135,14 +148,12 @@ public static class PoissonDiskSampling2D
 
         while (spawnPoints.Count > 0)
         {
-            // 여기에서 UnityEngine.Random을 명시적으로 사용합니다.
             int spawnIndex = UnityEngine.Random.Range(0, spawnPoints.Count);
             Vector2 spawnCenter = spawnPoints[spawnIndex];
             bool found = false;
 
             for (int i = 0; i < rejectionSamples; i++)
             {
-                // 여기에서 UnityEngine.Random을 명시적으로 사용합니다.
                 float angle = UnityEngine.Random.value * Mathf.PI * 2;
                 float r = UnityEngine.Random.Range(radius, 2 * radius);
                 Vector2 candidate = spawnCenter + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * r;
