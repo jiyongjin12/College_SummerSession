@@ -23,6 +23,7 @@ public class FishData : ScriptableObject
     public FishBehaviorType behaviorType; // 행동 타입 (도망침, 공격, 중립)  *
     [Tooltip("플레이어 감지 범위")]
     public float playerDetectionRange; // 플레이어 감지 범위
+    [Range(0, 360)] public float fieldOfView = 120f; // 플레이어 감지 시야각 (부채꼴)
 
     [Header("개별 Fish 군집 행동 파라미터")]
     [Tooltip("활동 범위")]

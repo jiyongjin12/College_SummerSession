@@ -2,102 +2,45 @@ using UnityEngine;
 
 public class EscapeFish : Fish
 {
-    protected override void Update()
-    {
-        base.Update();
-
-        // Fish.cs의 Update()에서 이미 모든 상태 (_isActingOnPlayer, _isOnActionCooldown, _isDamagedReacting)를
-        // 처리하고 있으므로, 여기서는 추가적인 Update 로직이 거의 필요 없습니다.
-        // 특정 EscapeFish만의 고유한 로직이 필요하다면 여기에 추가합니다.
-    }
-
-    protected override bool DetectPlayer()
-    {
-        // 변수명 변경: _isActingOnPlayer -> IsActingOnPlayer (프로퍼티)
-        // _isOnActionCooldown -> IsOnActionCooldown (프로퍼티)
-        // _isDamagedReacting -> IsDamagedReacting (프로퍼티)
-        if (IsActingOnPlayer || IsOnActionCooldown || IsDamagedReacting) return false;
-
-        // 변수명 변경: velocity -> currentVelocity
-        Vector2 forward = currentVelocity.normalized;
-        if (forward.sqrMagnitude < 0.001f) forward = transform.right;
-
-        Collider2D[] hitColliders = Physics2D.OverlapCircleAll(transform.position, fishData.playerDetectionRange, playerLayer);
-
-        foreach (Collider2D hit in hitColliders)
-        {
-            if (hit.CompareTag("Player"))
-            {
-                Vector2 directionToPlayer = (hit.transform.position - transform.position).normalized;
-                float angleToPlayer = Vector2.Angle(forward, directionToPlayer);
-                float detectionAngleHalf = 60f;
-
-                if (angleToPlayer <= detectionAngleHalf)
-                {
-                    RaycastHit2D hitCheck = Physics2D.Raycast(transform.position, directionToPlayer, fishData.playerDetectionRange, obstacleLayer);
-                    if (hitCheck.collider != null && hitCheck.collider.transform != hit.transform)
-                    {
-                        continue;
-                    }
-
-                    _playerTransform = hit.transform; // 플레이어 트랜스폼 저장
-                    return true; // 플레이어 감지 성공
-                }
-            }
-        }
-        _playerTransform = null;
-        return false;
-    }
-
-    protected override void HandlePlayerDetection()
-    {
-        base.HandlePlayerDetection(); // Fish.cs의 공통 감지 로직 호출 (_isPlayerDetected = true, velocity = zero)
-        // 변수명 변경: _isActingOnPlayer -> IsActingOnPlayer (프로퍼티)
-        IsActingOnPlayer = true; // 감지 즉시 도망 행동 시작
-        _currentActionTimer = fishData.chaseDuration; // 도망 시간 설정
-        Debug.Log($"{gameObject.name}: Player Detected! Transitioning to Escape state.");
-    }
-
-    public override void TakeDamage(Transform damageDealer, float damage)
-    {
-        base.TakeDamage(damageDealer, damage);
-        //Debug.Log($"{gameObject.name} (EscapeFish) received damage from {damageDealer.name}. Initiating escape!");
-        ImmediateDetection(damageDealer);
-    }
-
-    protected override void HandleDamagedReaction()
-    {
-        // 변수명 변경: _isPlayerDetected -> _isPlayerDetected (protected 필드)
-        // _isActingOnPlayer -> IsActingOnPlayer (프로퍼티)
-        // _isDamagedReacting -> IsDamagedReacting (프로퍼티)
-        _isPlayerDetected = true; // 피격 시에도 플레이어 인식
-        IsActingOnPlayer = true; // 행동 시작
-        _currentActionTimer = fishData.chaseDuration;
-        IsDamagedReacting = false;
-
-        HandlePlayerInteraction();
-    }
-
+    // HandlePlayerInteraction: 플레이어를 감지했을 때의 행동 (무조건 도망)
     protected override void HandlePlayerInteraction()
     {
-        if (_playerTransform == null)
+        if (_playerTransform == null || fishData == null)
         {
-            ResetPlayerActionState();
-            Debug.Log($"{gameObject.name} (EscapeFish): Player disappeared, returning to flocking.");
+            ResetPlayerActionState(); // 플레이어 없으면 행동 초기화
             return;
         }
 
-        Vector2 directionFromPlayer = ((Vector2)transform.position - (Vector2)_playerTransform.position).normalized;
-        Vector2 desiredVelocity = directionFromPlayer * fishData.normalSpeed * fishData.actionSpeedMultiplier;
+        // 플레이어로부터 멀어지는 방향으로 가속도 계산
+        // fishData.actionSpeedMultiplier를 곱하여 평소보다 빠르게 도망가도록 유도
+        Vector2 desiredVelocity = (transform.position - _playerTransform.position).normalized * fishData.normalSpeed * fishData.actionSpeedMultiplier;
+        currentAcceleration = Steer(desiredVelocity, currentVelocity, fishData.flockMaxForce);
+    }
 
-        // Steer 메서드의 시그니처에 맞게 인자 추가
-        // acceleration 변수명 변경: acceleration -> currentAcceleration
-        currentAcceleration += Steer(desiredVelocity, currentVelocity, fishData.flockMaxForce);
+    // TakeDamage: 외부로부터 데미지를 받았을 때 호출되는 메서드
+    public override void TakeDamage(Transform damageDealer, float damage)
+    {
+        base.TakeDamage(damageDealer, damage); // 부모 클래스의 체력 감소 및 즉시 감지 호출
 
-        // Job System에서 처리되므로 ObstacleAvoidance() 및 RectangleBoundaryAvoidance() 직접 호출 제거
-        // ObstacleAvoidance();
-        // RectangleBoundaryAvoidance(); // Job System에서 처리
+        // 물고기가 죽지 않았다면 피격 시 즉시 도망 상태로 전환
+        // 도망 물고기는 피격 시에도 도망칩니다.
+        if (!isDie)
+        {
+            ImmediateDetection(damageDealer);
+        }
+    }
 
-        Debug.DrawLine(transform.position, (Vector3)_playerTransform.position, Color.red);
+    // HandleDamagedReaction: 피격 시 반응 로직 (도망 물고기는 피격 시에도 도망)
+    protected override void HandleDamagedReaction()
+    {
+        // 도망 물고기는 피격 시에도 플레이어로부터 도망치므로,
+        // 플레이어 상호작용 로직(HandlePlayerInteraction)을 그대로 재활용합니다.
+        HandlePlayerInteraction();
+
+        // 일정 거리 이상 도망가면 피격 반응 종료 (군집 행동으로 돌아감)
+        if (_playerTransform != null && Vector2.Distance(transform.position, _playerTransform.position) > fishData.playerDetectionRange * 2f)
+        {
+            ResetPlayerActionState();
+        }
     }
 }

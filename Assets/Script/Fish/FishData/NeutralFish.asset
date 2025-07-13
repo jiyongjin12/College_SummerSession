@@ -22,7 +22,8 @@ MonoBehaviour:
   health: 10
   normalSpeed: 2.5
   behaviorType: 0
-  playerDetectionRange: 2
+  playerDetectionRange: 8
+  fieldOfView: 275
   scopeOfActivity: 30
   fishUnitCount: 8
   flockMaxForce: 3

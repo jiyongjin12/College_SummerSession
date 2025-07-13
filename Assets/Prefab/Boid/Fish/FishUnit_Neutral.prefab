@@ -103,18 +103,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   fishData: {fileID: 0}
-  parentBoid: {fileID: 0}
-  currentBiome: {fileID: 0}
-  isDie: 0
-  curHP: 0
-  _currentActionTimer: 0
-  FlockingSystemONOFF_Test: 0
+  playerLayer:
+    serializedVersion: 2
+    m_Bits: 8
   obstacleLayer:
     serializedVersion: 2
     m_Bits: 4096
-  playerLayer:
-    serializedVersion: 2
-    m_Bits: 0
+  currentVelocity: {x: 0, y: 0}
+  currentAcceleration: {x: 0, y: 0}
+  isDie: 0
+  parentID: -1
+  boidSpawnAreaCenter: {x: 0, y: 0}
+  boidSpawnAreaRadius: 0
+  biomeWorldMinBounds: {x: 0, y: 0}
+  biomeWorldMaxBounds: {x: 0, y: 0}
 --- !u!61 &-1355026627076769067
 BoxCollider2D:
   m_ObjectHideFlags: 0

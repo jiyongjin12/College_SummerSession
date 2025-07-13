@@ -2,213 +2,110 @@ using UnityEngine;
 
 public class NeutralFish : Fish
 {
-    private bool _hasAttackedOnce = false; // 피격 시 한 번의 공격 시도를 기록하는 플래그
-    private bool _isWatchingPlayer = false; // 플레이어를 주시 중인 상태 (감지 후 공격 받기 전)
+    private const float STARE_DURATION_TO_ATTACK = 4.0f;
 
-    protected override void Update()
+    // NeutralFish만의 응시 관련 변수
+    private bool _isStaringAtPlayer = false;
+    private float _currentStareTimer = 0f;
+
+    // HandlePlayerInteraction: 플레이어를 감지했을 때의 행동
+    protected override void HandlePlayerInteraction()
     {
-        base.Update();
-
-        // 피격 반응 중이 아니거나, 다른 플레이어 행동(_isActingOnPlayer) 중이 아닐 때
-        // 그리고 쿨다운 중이 아닐 때만 주시 로직을 실행합니다.
-        // 변수명 변경: _isDamagedReacting -> IsDamagedReacting (프로퍼티)
-        // _isActingOnPlayer -> IsActingOnPlayer (프로퍼티)
-        // _isOnActionCooldown -> IsOnActionCooldown (프로퍼티)
-        if (!IsDamagedReacting && !IsActingOnPlayer && !IsOnActionCooldown)
+        if (_playerTransform == null || fishData == null)
         {
-            if (_isPlayerDetected) // 이미 플레이어가 감지되어 주시 중인 상태 (protected 필드)
-            {
-                // 플레이어가 아직 시야 내에 있는지 재확인
-                bool playerStillInSight = DetectPlayer(); // DetectPlayer()가 _playerTransform을 업데이트
-                if (playerStillInSight)
-                {
-                    LookAtPlayer(); // 계속 플레이어를 바라봅니다.
-                }
-                else
-                {
-                    Debug.Log($"{gameObject.name}: Player out of sight during watch. Returning to flocking.");
-                    ResetNeutralWatchState(); // 주시 상태 종료 및 원래 상태로 복귀
-                }
-            }
-            // else: DetectPlayer()는 Fish.cs의 Update에서 호출되고, 감지되면 HandlePlayerDetection()이 호출되어 _isPlayerDetected가 true로 설정
+            ResetPlayerActionState();
+            return;
         }
-    }
 
-    // NeutralFish 전용 플레이어 감지 로직.
-    protected override bool DetectPlayer()
-    {
-        // 변수명 변경: velocity -> currentVelocity
-        Vector2 forward = currentVelocity.normalized;
-        if (forward.sqrMagnitude < 0.001f) forward = transform.right;
+        float distanceToPlayer = Vector2.Distance(transform.position, _playerTransform.position);
 
-        Collider2D[] hitColliders = Physics2D.OverlapCircleAll(transform.position, fishData.playerDetectionRange, playerLayer);
-
-        foreach (Collider2D hit in hitColliders)
+        // 플레이어가 감지 범위를 벗어나면 상호작용 종료
+        if (distanceToPlayer > fishData.playerDetectionRange * 1.1f)
         {
-            if (hit.CompareTag("Player"))
-            {
-                Vector2 directionToPlayer = (hit.transform.position - transform.position).normalized;
-                float angleToPlayer = Vector2.Angle(forward, directionToPlayer);
-                float detectionAngleHalf = 60f;
-
-                if (angleToPlayer <= detectionAngleHalf)
-                {
-                    RaycastHit2D hitCheck = Physics2D.Raycast(transform.position, directionToPlayer, fishData.playerDetectionRange, obstacleLayer);
-                    if (hitCheck.collider != null && hitCheck.collider.transform != hit.transform)
-                    {
-                        continue;
-                    }
-
-                    _playerTransform = hit.transform; // 플레이어 트랜스폼 저장
-                    return true; // 플레이어 감지 성공
-                }
-            }
+            ResetPlayerActionState();
+            return;
         }
-        _playerTransform = null; // 플레이어가 시야에 없으면 null로 설정
-        return false;
-    }
 
-    // 플레이어가 감지되었을 때 공통 처리 후 NeutralFish만의 추가 행동 초기화 (주시 상태로 진입).
-    protected override void HandlePlayerDetection()
-    {
-        base.HandlePlayerDetection(); // Fish.cs의 공통 감지 로직 호출 (_isPlayerDetected = true, velocity = zero)
-        _isWatchingPlayer = true; // 주시 상태 시작
-        Debug.Log($"{gameObject.name}: Player Detected! Transitioning to Watch state.");
-    }
-
-    // 플레이어를 바라보는 로직.
-    private void LookAtPlayer()
-    {
-        if (_playerTransform != null)
+        // --- 응시 로직 ---
+        if (!_isAttacking) // 이미 공격 중이 아니라면 응시 로직 수행
         {
-            Vector2 directionToPlayer = ((Vector2)_playerTransform.position - (Vector2)transform.position).normalized;
+            _isStaringAtPlayer = true;
+            currentVelocity = Vector2.zero; // 멈춤
+            currentAcceleration = Vector2.zero; // 가속도도 0
+
+            // 플레이어 바라보기
+            Vector2 directionToPlayer = (_playerTransform.position - transform.position).normalized;
             float targetAngle = Mathf.Atan2(directionToPlayer.y, directionToPlayer.x) * Mathf.Rad2Deg;
             Quaternion targetRotation = Quaternion.Euler(0, 0, targetAngle);
             transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, fishData.rotationSpeed * Time.deltaTime);
 
-            // 변수명 변경: velocity -> currentVelocity
-            currentVelocity = Vector2.zero; // 주시 중에는 움직이지 않음
+            // 응시 타이머 증가
+            _currentStareTimer += Time.deltaTime;
 
-            Debug.DrawLine(transform.position, (Vector3)_playerTransform.position, Color.yellow);
+            // 4초 이상 응시했으면 공격 시작
+            if (_currentStareTimer >= STARE_DURATION_TO_ATTACK)
+            {
+                Debug.Log($"{gameObject.name}이(가) 플레이어를 {STARE_DURATION_TO_ATTACK}초 이상 응시하여 공격을 시작합니다!");
+                _isAttacking = true; // 공격 상태 플래그 설정
+                _currentActionTimer = fishData.chaseDuration; // 공격 지속 시간 설정 (공격 지속 시간 이후 ResetPlayerActionState 호출)
+                _currentStareTimer = 0f; // 응시 타이머 리셋
+                _isStaringAtPlayer = false; // 응시 상태 해제
+
+                // 플레이어에게 돌진하는 가속도 설정
+                Vector2 desiredVelocity = directionToPlayer * fishData.normalSpeed * fishData.actionSpeedMultiplier;
+                currentAcceleration = Steer(desiredVelocity, currentVelocity, fishData.flockMaxForce);
+            }
+        }
+
+        // --- 공격 중 로직 ---
+        if (_isAttacking)
+        {
+            // 공격 중에는 플레이어를 향해 계속 돌진
+            Vector2 attackDirection = (_playerTransform.position - transform.position).normalized;
+            Vector2 desiredVelocity = attackDirection * fishData.normalSpeed * fishData.actionSpeedMultiplier;
+            currentAcceleration = Steer(desiredVelocity, currentVelocity, fishData.flockMaxForce);
+
+            // _currentActionTimer는 Fish.Update()에서 이미 감소되고 있으므로 여기서 다시 감소시킬 필요 없음.
+            // 하지만 공격이 시작될 때 _currentActionTimer를 설정했으므로, 그 타이머가 0이 되면 ResetPlayerActionState가 호출될 것임.
+            // 여기서는 공격 로직만 정의하고, 종료는 Fish.Update()에 맡김.
         }
     }
 
-    // 중립 물고기의 주시 상태를 종료하고 일반 상태로 복귀
-    private void ResetNeutralWatchState()
+    // ResetPlayerActionState 오버라이드: NeutralFish 고유 변수들도 초기화
+    protected override void ResetPlayerActionState()
     {
-        _isPlayerDetected = false; // 더 이상 감지 상태 아님
-        _isWatchingPlayer = false; // 주시 상태 종료
-        _playerTransform = null;
-        // currentVelocity는 이미 0이지만, 다음 프레임부터 UpdateVelocity에서 다시 군집 속도 계산 시작
+        base.ResetPlayerActionState(); // 부모 클래스의 초기화 로직 호출
+        _isStaringAtPlayer = false;
+        _currentStareTimer = 0f;
     }
 
+
+    // TakeDamage: 외부로부터 데미지를 받았을 때 호출되는 메서드
     public override void TakeDamage(Transform damageDealer, float damage)
     {
         base.TakeDamage(damageDealer, damage);
-        ImmediateDetection(damageDealer);
-    }
 
-    protected override void ImmediateDetection(Transform damageDealer)
-    {
-        // 피격 시에는 다른 상태(주시 포함)보다 우선적으로 반응
-        // 변수명 변경: _isActingOnPlayer -> IsActingOnPlayer (프로퍼티)
-        // _isOnActionCooldown -> IsOnActionCooldown (프로퍼티)
-        if (!IsActingOnPlayer && !IsOnActionCooldown && damageDealer.CompareTag("Player"))
+        if (!isDie)
         {
-            Debug.Log($"{gameObject.name} (NeutralFish) received damage from {damageDealer.name}. Initiating counter-attack!");
-            // 변수명 변경: _isDamagedReacting -> IsDamagedReacting (프로퍼티)
-            IsDamagedReacting = true; // 피격 반응 상태로 진입
-            _playerTransform = damageDealer; // 데미지를 준 오브젝트 (플레이어)
-            _hasAttackedOnce = false; // 공격 플래그 초기화
-            _isWatchingPlayer = false; // 주시 상태 종료 (피격 시 공격 모드로 전환)
-            _isPlayerDetected = false; // 피격 시에는 주시 상태가 아니므로 감지 플래그도 해제
-            // 변수명 변경: velocity -> currentVelocity
-            currentVelocity = Vector2.zero; // 잠시 멈춰서 반응 시작
+            ImmediateDetection(damageDealer);
         }
     }
 
+    // HandleDamagedReaction: 피격 시 반응 로직 (중립 물고기는 피격 시 도망)
     protected override void HandleDamagedReaction()
     {
-        // 피격 시에는 무조건 플레이어를 추격/공격하는 행동으로 전환
-        // 변수명 변경: _isPlayerDetected -> _isPlayerDetected (protected 필드)
-        // _isActingOnPlayer -> IsActingOnPlayer (프로퍼티)
-        // _isDamagedReacting -> IsDamagedReacting (프로퍼티)
-        _isPlayerDetected = true; // 데미지를 받았으니 플레이어의 존재를 '인식'했다고 가정 (감지 아님)
-        IsActingOnPlayer = true;
-        _currentActionTimer = fishData.chaseDuration; // 피격 시에도 추격 시간 적용
-        IsDamagedReacting = false; // 반응 처리 후 플래그 해제 (이제 _isActingOnPlayer가 관리)
-
-        HandlePlayerInteraction(); // 즉시 공격 행동 실행
-    }
-
-    protected override void HandlePlayerInteraction()
-    {
-        // 플레이어 트랜스폼이 유효한 경우에만 실행
         if (_playerTransform == null)
         {
             ResetPlayerActionState();
-            Debug.Log($"{gameObject.name} (NeutralFish): Player disappeared during counter-attack, returning to flocking.");
             return;
         }
 
-        // 중립 물고기는 피격 시 단 한 번만 공격을 시도
-        if (!_hasAttackedOnce)
+        Vector2 desiredVelocity = (transform.position - _playerTransform.position).normalized * fishData.normalSpeed * fishData.actionSpeedMultiplier;
+        currentAcceleration = Steer(desiredVelocity, currentVelocity, fishData.flockMaxForce);
+
+        if (Vector2.Distance(transform.position, _playerTransform.position) > fishData.playerDetectionRange * 2f)
         {
-            float distanceToPlayer = Vector2.Distance(transform.position, _playerTransform.position);
-
-            if (distanceToPlayer <= fishData.attackRange)
-            {
-                // 변수명 변경: velocity -> currentVelocity
-                currentVelocity = Vector2.zero;
-                _isAttacking = true;
-
-                if (_currentAttackCooldownTimer <= 0)
-                {
-                    Attack();
-                    _currentAttackCooldownTimer = fishData.attackCooldown;
-                    _hasAttackedOnce = true;
-
-                    ResetPlayerActionState();
-                    Debug.Log($"{gameObject.name} (NeutralFish): Attacked once. Entering cooldown.");
-                }
-            }
-            else
-            {
-                _isAttacking = false;
-                Vector2 directionToPlayer = ((Vector2)_playerTransform.position - (Vector2)transform.position).normalized;
-                Vector2 desiredVelocity = directionToPlayer * fishData.normalSpeed * fishData.actionSpeedMultiplier;
-                // Steer 메서드의 시그니처에 맞게 인자 추가
-                // acceleration 변수명 변경: acceleration -> currentAcceleration
-                currentAcceleration += Steer(desiredVelocity, currentVelocity, fishData.flockMaxForce);
-
-                // Job System에서 처리되므로 ObstacleAvoidance() 직접 호출 제거
-                // ObstacleAvoidance();
-            }
-        }
-        else
-        {
-            // 이미 공격 시도했으면 더 이상 추격하지 않고, ResetPlayerActionState()에 의해 쿨다운으로 진입
-            // 여기서 ResetPlayerActionState()가 계속 호출될 필요는 없습니다.
-            // _currentActionTimer가 0이 되면 Fish.cs의 Update()에서 자동으로 ResetPlayerActionState()를 호출합니다.
-        }
-
-        Debug.DrawLine(transform.position, (Vector3)_playerTransform.position, Color.yellow);
-    }
-
-    private void Attack()
-    {
-        Debug.Log($"{gameObject.name} (NeutralFish) attacks Player for {fishData.attackDamage} damage!");
-        // 공격 로직 (예: 데미지 적용, 애니메이션 트리거 등)
-    }
-
-    protected override void OnDrawGizmosSelected()
-    {
-        base.OnDrawGizmosSelected();
-
-        if (fishData != null)
-        {
-            Gizmos.color = Color.yellow;
-            Gizmos.DrawWireSphere(transform.position, fishData.attackRange);
+            ResetPlayerActionState();
         }
     }
 }

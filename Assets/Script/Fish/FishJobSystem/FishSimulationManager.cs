@@ -144,10 +144,10 @@ public class FishSimulationManager : MonoBehaviour
                 flockingBoundsCenter = new float2(fish.GetFlockingBoundsCenter().x, fish.GetFlockingBoundsCenter().y),
                 flockingBoundsRadius = fish.GetFlockingBoundsRadius(),
 
-                // ===== 변경: 플레이어 관련 상태 플래그들을 정확하게 전달 =====
+                // ===== 변경 부분 1: fish.IsOnActionCooldown -> fish.IsOnReDetectionCooldown =====
                 isActingOnPlayer = fish.IsActingOnPlayer,
                 isDamagedReacting = fish.IsDamagedReacting,
-                isOnActionCooldown = fish.IsOnActionCooldown,
+                isOnActionCooldown = fish.IsOnReDetectionCooldown, // <--- 여기!
                 isDie = fish.isDie,
 
                 hasObstacleHit = fish._raycastHitData.collider != null,
@@ -156,11 +156,9 @@ public class FishSimulationManager : MonoBehaviour
                 distanceToObstacle = fish._raycastHitData.collider != null ? fish._raycastHitData.distance : fish.fishData.raycastLength,
                 parentID = fish.parentID,
 
-                // ===== 추가: Boid 활동 경계 정보 전달 =====
                 boidActivityCenter = fish.boidSpawnAreaCenter,
                 boidActivityRadius = fish.boidSpawnAreaRadius,
 
-                // ===== 추가: 바이옴 경계 정보 전달 =====
                 biomeWorldMinBounds = fish.biomeWorldMinBounds,
                 biomeWorldMaxBounds = fish.biomeWorldMaxBounds
             };
@@ -172,13 +170,6 @@ public class FishSimulationManager : MonoBehaviour
             fishOutputs = fishOutputs,
             deltaTime = Time.deltaTime,
             playerPos = new float2(playerTransform != null ? playerTransform.position.x : 0f, playerTransform != null ? playerTransform.position.y : 0f),
-            // biomeBounds = biomeBounds, // 이제 필요 없음
-            // MapManager의 전체 맵 경계는 더 이상 Job에 직접 전달할 필요 없음
-            // 물고기 개별의 바이옴 경계 정보가 더 중요해졌습니다.
-            // mapManagerWorldCenterY = MapManager.Instance.transform.position.y,
-            // mapManagerMapSizeY = MapManager.Instance.mapSize.y,
-            // mapManagerWorldMinX = MapManager.Instance.transform.position.x - MapManager.Instance.mapSize.x / 2f,
-            // mapManagerWorldMaxX = MapManager.Instance.transform.position.x + MapManager.Instance.mapSize.x / 2f
         };
 
         JobHandle handle = simulationJob.Schedule(allActiveFish.Count, 64);
@@ -192,16 +183,11 @@ public class FishSimulationManager : MonoBehaviour
 
             FishOutputData output = fishOutputs[i];
 
-            // ===== 변경: 플레이어와 상호작용 중이거나 쿨다운 중이 아닐 때만 Job 결과 적용 =====
-            if (!fish.IsActingOnPlayer && !fish.IsDamagedReacting && !fish.IsOnActionCooldown)
+            // ===== 변경 부분 2: !fish.IsOnActionCooldown -> !fish.IsOnReDetectionCooldown =====
+            if (!fish.IsActingOnPlayer && !fish.IsDamagedReacting && !fish.IsOnReDetectionCooldown) // <--- 여기!
             {
                 fish.currentAcceleration = output.newAcceleration;
-                // Job에서 계산된 newVelocity는 가속도만 적용된 결과이므로,
-                // Fish.UpdateVelocity()에서 최종 currentVelocity를 계산하는 것이 더 좋습니다.
-                // fish.currentVelocity = output.newVelocity; // 이 부분은 주석 처리
             }
-            // else: 플레이어와 상호작용 중인 물고기는 이미 MonoBehaviour에서 currentAcceleration과 currentVelocity가 업데이트되었거나
-            //       특정 로직에 따라 0으로 유지되어야 하므로 Job 결과를 무시하고 자체 로직을 따릅니다.
         }
     }
 }
