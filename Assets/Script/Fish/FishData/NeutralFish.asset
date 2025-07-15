@@ -25,7 +25,7 @@ MonoBehaviour:
   playerDetectionRange: 8
   fieldOfView: 275
   scopeOfActivity: 30
-  fishUnitCount: 8
+  fishUnitCount: 1
   flockMaxForce: 3
   flockNeighborhoodRadius: 3
   flockSeparationRadius: 1.3

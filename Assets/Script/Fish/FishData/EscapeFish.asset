@@ -23,8 +23,9 @@ MonoBehaviour:
   normalSpeed: 2.5
   behaviorType: 0
   playerDetectionRange: 2
+  fieldOfView: 120
   scopeOfActivity: 30
-  fishUnitCount: 8
+  fishUnitCount: 1
   flockMaxForce: 3
   flockNeighborhoodRadius: 3
   flockSeparationRadius: 1.3

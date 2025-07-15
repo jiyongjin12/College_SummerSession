@@ -10,7 +10,7 @@ public class FishData : ScriptableObject
     public GameObject fishPrefab; // 물고기 외형
 
     [Header("생태 정보")]
-    public FishType fishType; // 물고기 종류 (예: 일반, 희귀, 전설, 보스) && 사이즈 (예: 소형 중형 대형)으로 바꿔도 될지도 
+    public FishType fishType; // 사이즈 (예: 소형 중형 대형)
     public List<FishHabitat> habitats; // 서식지 (노말, 동굴, 잔해, 산호초)
     public float minDepth; // 최소 출현 수심
     public float maxDepth; // 최대 출현 수심
@@ -62,7 +62,7 @@ public class FishData : ScriptableObject
 
 
     [Header("자원 및 보상")]
-    public int baseValue; // 기본 판매 가격
+    public float baseValue; // 기본 판매 가격
 
     [Header("도감 정보")]
     [TextArea(3, 5)]
@@ -72,11 +72,9 @@ public class FishData : ScriptableObject
 
 public enum FishType
 {
-    Common,
-    Uncommon,
-    Rare,
-    Legendary,
-    Boss
+    Small,
+    Medium,
+    Large
 }
 
 public enum FishHabitat
