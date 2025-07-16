@@ -36,8 +36,8 @@ public abstract class Gun_Base : MonoBehaviour
     public int maxAmmo;
 
     [Header("Min : Max")]
-    [SerializeField] protected int dir_ran_min;
-    [SerializeField] protected int dir_ran_max;
+    [SerializeField] protected float dir_ran_min;
+    [SerializeField] protected float dir_ran_max;
 
     bool isFest;
     bool isCilck;
@@ -66,8 +66,21 @@ public abstract class Gun_Base : MonoBehaviour
 
     protected virtual void Start()
     {
-        //anim = me.gameObject.GetComponent<Animator>();
         p = Player.Instance;
+
+        DataManager d = DataManager.instance;
+        List<float> StatusList = d.GetCurGunLVData();
+        damage = StatusList[0];
+        max_bullet_delay = StatusList[1];
+        max_rerode_delay = StatusList[2];
+        magazine = (int)StatusList[3];
+        maxAmmo = (int)StatusList[4];
+        curAmmo = magazine;
+        remainAmmo = maxAmmo;
+        dir_ran_min = StatusList[5];
+        dir_ran_max = StatusList[6];
+
+        //anim = me.gameObject.GetComponent<Animator>();
         // canvas = MainCanvas.Instance;
 
         // ammo_text = canvas.curAmmo;

@@ -814,6 +814,59 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!1 &274291386
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 274291388}
+  - component: {fileID: 274291387}
+  m_Layer: 0
+  m_Name: DataManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &274291387
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 274291386}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 87d937937968a0e4cad1ff9e7b59deb6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  curPlayerUpgrade: {fileID: 11400000, guid: dcd8b769607c2e448a52a00519158fb3, type: 2}
+  upgradeData:
+    hpLVList: 
+    O2LVList: 
+    speedLVList: 
+    capacityLVList: 
+  testData: []
+  StatusUpgradeData: {fileID: 4900000, guid: e9b3548e27413674c968ef1e9a02e732, type: 3}
+  GunUpgradeData: {fileID: 4900000, guid: 4b9349c4df4456e4680e01335f5f15a9, type: 3}
+--- !u!4 &274291388
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 274291386}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -2.6450977, y: 2.0170074, z: -0.11538367}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &279413791
 GameObject:
   m_ObjectHideFlags: 0
@@ -1804,6 +1857,7 @@ MonoBehaviour:
   O2: 80
   moveSpeed: 5
   capacity: 0
+  maxCapacity: 0
   curFishList: 
   gunPos: {fileID: 99233578}
   curWeapon: {fileID: 930264304}
@@ -2677,3 +2731,4 @@ SceneRoots:
   - {fileID: 636513421}
   - {fileID: 1010717468}
   - {fileID: 1527488958}
+  - {fileID: 274291388}

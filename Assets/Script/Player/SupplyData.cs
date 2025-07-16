@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[CreateAssetMenu(fileName = "SupplyData", menuName = "SupplyData/SupplyData")]
+[CreateAssetMenu(fileName = "SupplyData", menuName = "Data/SupplyData")]
 public class SupplyData : ScriptableObject
 {
     public int hp;

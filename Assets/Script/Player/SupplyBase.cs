@@ -53,7 +53,7 @@ public class SupplyBase : MonoBehaviour
     {
         yield return StartCoroutine(ThrowItem(ItemType.HP, data.hp - (p.maxHP - p.HP) < 0 ? data.hp : p.maxHP - p.HP));
         yield return StartCoroutine(ThrowItem(ItemType.Ammo, data.ammo - (p.curWeapon.maxAmmo - p.curWeapon.remainAmmo) < 0 ? data.ammo : p.curWeapon.maxAmmo - p.curWeapon.remainAmmo));
-        yield return StartCoroutine(ThrowItem(ItemType.O2, data.O2 - (100 - p.O2) < 0 ? data.O2 : 100 - p.O2));
+        yield return StartCoroutine(ThrowItem(ItemType.O2, data.O2 - (p.maxO2 - p.O2) < 0 ? data.O2 : p.maxO2 - p.O2));
         //StartCoroutine(ThrowItem(ItemType.HP, data.hp - (p.maxHP - p.HP) < 0 ? data.hp : p.maxHP - p.HP, true));
     }
 

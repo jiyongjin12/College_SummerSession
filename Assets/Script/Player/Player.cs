@@ -22,8 +22,10 @@ public class Player : MonoBehaviour
     public int HP;
     public int maxHP;
     public int O2;
+    public int maxO2;
     public float moveSpeed;
     public int capacity;
+    public int maxCapacity;
     public List<int> curFishList = new();
 
     [Header("Weapon")]
@@ -58,6 +60,15 @@ public class Player : MonoBehaviour
         rigid = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
         interactionButton.onClick.AddListener(FireModeChangeButton);
+
+        DataManager d = DataManager.instance;
+        maxHP = d.upgradeData.hpLVList[d.curPlayerData.hpLV];
+        maxO2 = d.upgradeData.O2LVList[d.curPlayerData.O2LV];
+        maxCapacity = d.upgradeData.capacityLVList[d.curPlayerData.capacityLV];
+
+        HP = maxHP;
+        O2 = maxO2;
+        capacity = 0;
     }
 
     void Update()
