@@ -3,7 +3,7 @@ using UnityEngine;
 using System.Linq;
 
 public abstract class Fish : MonoBehaviour
-{ // Ã³¸®
+{ // Ã³ï¿½ï¿½
     public FishData fishData;
     public LayerMask playerLayer;
     public LayerMask obstacleLayer;
@@ -58,7 +58,7 @@ public abstract class Fish : MonoBehaviour
 
     protected virtual void Update()
     {
-        HandleReDetectionCooldown(); // ÀçÅ½Áö Äð´Ù¿î Å¸ÀÌ¸Ó¸¦ ¿©±â¼­ °¨¼Ò½ÃÅµ´Ï´Ù.
+        HandleReDetectionCooldown(); // ï¿½ï¿½Å½ï¿½ï¿½ ï¿½ï¿½Ù¿ï¿½ Å¸ï¿½Ì¸Ó¸ï¿½ ï¿½ï¿½ï¿½â¼­ ï¿½ï¿½ï¿½Ò½ï¿½Åµï¿½Ï´ï¿½.
         HandleAttackCooldown();
 
         if (isDie) return;
@@ -68,22 +68,22 @@ public abstract class Fish : MonoBehaviour
             HandleDamagedReaction();
             UpdateVelocity();
         }
-        else if (IsActingOnPlayer) // ÇÃ·¹ÀÌ¾î¿Í »óÈ£ÀÛ¿ë Áß (ÃßÀû, ÀÀ½Ã, °ø°Ý µî)
+        else if (IsActingOnPlayer) // ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ï¿½ ï¿½ï¿½È£ï¿½Û¿ï¿½ ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½)
         {
             HandlePlayerInteraction();
 
-            // InteractionÀÌ ³¡³ª¸é ResetPlayerActionState()°¡ È£ÃâµÇ°í,
-            // ÀÌ ¾È¿¡¼­ IsActingOnPlayer = false; ¿Í IsOnReDetectionCooldown = true; °¡ ¼³Á¤µË´Ï´Ù.
+            // Interactionï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ResetPlayerActionState()ï¿½ï¿½ È£ï¿½ï¿½Ç°ï¿½,
+            // ï¿½ï¿½ ï¿½È¿ï¿½ï¿½ï¿½ IsActingOnPlayer = false; ï¿½ï¿½ IsOnReDetectionCooldown = true; ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ë´Ï´ï¿½.
             _currentActionTimer -= Time.deltaTime;
             if (_currentActionTimer <= 0)
             {
-                ResetPlayerActionState(); // ¿©±â¼­ ÀçÅ½Áö Äð´Ù¿îÀÌ ½ÃÀÛµË´Ï´Ù.
+                ResetPlayerActionState(); // ï¿½ï¿½ï¿½â¼­ ï¿½ï¿½Å½ï¿½ï¿½ ï¿½ï¿½Ù¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ÛµË´Ï´ï¿½.
             }
             UpdateVelocity();
         }
-        else // ÀÏ¹ÝÀûÀÎ ±ºÁý/¹æÈ² »óÅÂ (ÇÃ·¹ÀÌ¾î¿Í »óÈ£ÀÛ¿ë ÁßÀÌ ¾Æ´Ò ¶§)
+        else // ï¿½Ï¹ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½È² ï¿½ï¿½ï¿½ï¿½ (ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ï¿½ ï¿½ï¿½È£ï¿½Û¿ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Æ´ï¿½ ï¿½ï¿½)
         {
-            if (!IsOnReDetectionCooldown) // ÀçÅ½Áö Äð´Ù¿îÀÌ ¾Æ´Ò ¶§¸¸ ÇÃ·¹ÀÌ¾î¸¦ °¨ÁöÇÕ´Ï´Ù.
+            if (!IsOnReDetectionCooldown) // ï¿½ï¿½Å½ï¿½ï¿½ ï¿½ï¿½Ù¿ï¿½ï¿½ï¿½ ï¿½Æ´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾î¸¦ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
             {
                 _isPlayerDetected = DetectPlayer();
                 if (_isPlayerDetected)
@@ -91,7 +91,7 @@ public abstract class Fish : MonoBehaviour
                     HandlePlayerDetection();
                 }
             }
-            UpdateVelocity(); // ±ºÁý ½Ã½ºÅÛ °¡¼Óµµ´Â FishSimulationManager¿¡¼­ °è»êµÇ¾î ÀÌ velocity¿¡ ¿µÇâÀ» ÁÝ´Ï´Ù.
+            UpdateVelocity(); // ï¿½ï¿½ï¿½ï¿½ ï¿½Ã½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Óµï¿½ï¿½ï¿½ FishSimulationManagerï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ç¾ï¿½ ï¿½ï¿½ velocityï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ý´Ï´ï¿½.
         }
 
         UpdatePosition();
@@ -174,6 +174,7 @@ public abstract class Fish : MonoBehaviour
 
     public virtual void TakeDamage(Transform damageDealer, float damage)
     {
+        Debug.Log("Damage");
         if (fishData.health <= 0) return;
 
         fishData.health -= damage;
@@ -258,7 +259,7 @@ public abstract class Fish : MonoBehaviour
         return vector;
     }
 
-    // --- µð¹ö±× ±âÁî¸ð ½Ã°¢È­ ---
+    // --- ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ã°ï¿½È­ ---
     protected virtual void OnDrawGizmosSelected()
     {
         if (fishData != null)
@@ -275,7 +276,7 @@ public abstract class Fish : MonoBehaviour
             Vector3 rightRayDirection = rightRayRotation * fovDirection;
 
             Gizmos.DrawLine(transform.position, transform.position + leftRayDirection * fishData.playerDetectionRange);
-            // ¼öÁ¤ ºÎºÐ: Vector3 * Vector3 ´ë½Å Vector3 * float ·Î ¼öÁ¤
+            // ï¿½ï¿½ï¿½ï¿½ ï¿½Îºï¿½: Vector3 * Vector3 ï¿½ï¿½ï¿½ Vector3 * float ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
             Gizmos.DrawLine(transform.position, transform.position + rightRayDirection * fishData.playerDetectionRange);         
 
             Gizmos.color = Color.magenta;
