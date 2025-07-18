@@ -38,10 +38,10 @@ public abstract class Bullet_Base : MonoBehaviour
             e_hit.TakeDamage(this.transform, damage);
             Hit_Event();
         }
-        // else if (hit.collider.CompareTag("Wall"))
-        // {
-        //     Hit_Wall(hit);
-        // }
+        else if (hit.collider.CompareTag("Wall"))
+        {
+            Hit_Wall(hit);
+        }
     }
 
     protected abstract void Hit_Event();

@@ -42,6 +42,7 @@ public abstract class Gun_Base : MonoBehaviour
     [SerializeField] protected float dir_ran_max;
 
     bool isRerode;
+    bool isFire;
     public bool isActive = true;
     protected bool isRight;
     [SerializeField] protected bool isInfinite;
@@ -102,7 +103,7 @@ public abstract class Gun_Base : MonoBehaviour
         Spin();
 
         if (curBulletDelay < maxBulletDelay) curBulletDelay += Time.deltaTime;
-        if (curAmmo < magazine)
+        if (curAmmo < magazine && isFire)
         {
             if (curWaitRerodeTime < waitRerodeTime) curWaitRerodeTime += Time.deltaTime;
             else Reload();
@@ -112,6 +113,7 @@ public abstract class Gun_Base : MonoBehaviour
 
     public void UsingGun(bool curMode)
     {
+        isFire = curMode;
         if (curMode) Fire();
         else Inhale();
     }
@@ -197,9 +199,12 @@ public abstract class Gun_Base : MonoBehaviour
 
         foreach (Collider2D col in InhaleCollider)
         {
-            if (col.TryGetComponent<Fish>(out var fish)) p.curFishList.Add(fish.fishData.fishID);
+            if (col.TryGetComponent<Fish>(out var fish))
+            {
+                p.curFishList.Add(fish.fishData.fishID);
+                if(fish.isDie) Destroy(col.gameObject);
+            }
             else Debug.Log("This Obj is TestFish? Fish Component is NULL");
-            Destroy(col.gameObject);
         }
 
 
