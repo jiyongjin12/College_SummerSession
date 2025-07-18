@@ -37,6 +37,7 @@ public class Player : MonoBehaviour
 
     bool isDamage;
     public bool isActive = false;
+    public bool isCantMove = false;
     public bool fireMode = true;
     public float radius;
 
@@ -78,6 +79,11 @@ public class Player : MonoBehaviour
         if (!isActive) return;
         if (targetJoystick.HendleMove != Vector2.zero) canvas.target.anchoredPosition = targetJoystick.HendleMove * radius;
 
+        if (isCantMove)
+        {
+            rigid.linearVelocity = Vector2.zero;
+            return;
+        }
         Move();
         if(targetJoystick.HendleInput.magnitude > 0.5f) curWeapon.UsingGun(fireMode);
     }
@@ -86,7 +92,6 @@ public class Player : MonoBehaviour
 
     void Move()
     {
-        //if (isSlow) return;
         x = Input.GetAxisRaw("Horizontal");
         y = Input.GetAxisRaw("Vertical");
         // x = moveJoystick.Horizontal;

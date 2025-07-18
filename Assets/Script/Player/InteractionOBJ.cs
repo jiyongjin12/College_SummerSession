@@ -34,7 +34,7 @@ public abstract class InteractionOBJ : MonoBehaviour
             TriggerEvent(true);
             canvas.interactionButton.onClick.AddListener(p.FireModeChangeButton);
             canvas.interactionButton.onClick.RemoveListener(add);
-            canvas.interactionButton.GetComponent<Image>().color = Color.white;
+            if(canvas.interactionButton.TryGetComponent<Image>(out var image)) image.color = Color.white;
         }
     }
 

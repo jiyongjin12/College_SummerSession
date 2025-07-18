@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class EscapeBase : InteractionOBJ
 {
@@ -16,11 +17,18 @@ public class EscapeBase : InteractionOBJ
 
     void Update()
     {
-        if (!holdButton.IsHeldDown || !isHold) return;
+        if (!holdButton.IsHeldDown || !isHold)
+        {
+            curTime = 0;
+            canvas.FillEscape(1);
+            p.isCantMove = false;
+            return;
+        }
+        p.isCantMove = true;
         curTime += Time.deltaTime;
         canvas.FillEscape(curTime / escpaeTime);
 
-        if (curTime > escpaeTime) Debug.Log("OUT");
+        if (curTime > escpaeTime) SceneManager.LoadScene(2);
     }
 
     void Click()
