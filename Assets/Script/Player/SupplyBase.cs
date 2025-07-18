@@ -5,43 +5,37 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class SupplyBase : MonoBehaviour
+public class SupplyBase : InteractionOBJ
 {
     public SupplyData data;
     public ItemBullet item;
-    public Player p;
 
     [Header("Bezier_Shot")]
     [SerializeField] private float bezier_moveSpeed;
     [SerializeField] private float bezier_minRadius;
     [SerializeField] private float bezier_maxRadius;
     [SerializeField] private float bezier_maxMoveValue;
-    bool stopThrow;
-    bool startThrow;
+    [SerializeField] bool stopThrow;
+    [SerializeField] bool startThrow;
 
-    void OnTriggerEnter2D(Collider2D collision)
+    protected override void Start()
     {
-        if (collision.CompareTag("Player"))
-        {
-            stopThrow = false;
-            p.interactionButton.onClick.AddListener(UsingSupplyBaseButton);
-            p.interactionButton.onClick.RemoveListener(p.FireModeChangeButton);
-            p.interactionButton.GetComponent<Image>().color = Color.red;
-        }
+        base.Start();
+        add += UsingSupplyBaseButton;
     }
-    void OnTriggerExit2D(Collider2D collision)
+
+    protected override void TriggerEvent(bool isOut = false)
     {
-        if (collision.CompareTag("Player"))
+        if (isOut)
         {
             stopThrow = true;
             startThrow = false;
-            p.interactionButton.onClick.AddListener(p.FireModeChangeButton);
-            p.interactionButton.onClick.RemoveListener(UsingSupplyBaseButton);
-            p.interactionButton.GetComponent<Image>().color = Color.white;
-        }
+        }else stopThrow = false;
     }
+    
     public void UsingSupplyBaseButton()
     {
+        Debug.Log($"{startThrow}");
         if (!startThrow)
         {
             startThrow = true;
@@ -54,6 +48,8 @@ public class SupplyBase : MonoBehaviour
         yield return StartCoroutine(ThrowItem(ItemType.HP, data.hp - (p.maxHP - p.HP) < 0 ? data.hp : p.maxHP - p.HP));
         yield return StartCoroutine(ThrowItem(ItemType.Ammo, data.ammo - (p.curWeapon.maxAmmo - p.curWeapon.remainAmmo) < 0 ? data.ammo : p.curWeapon.maxAmmo - p.curWeapon.remainAmmo));
         yield return StartCoroutine(ThrowItem(ItemType.O2, data.O2 - (p.maxO2 - p.O2) < 0 ? data.O2 : p.maxO2 - p.O2));
+        yield return new WaitForSeconds(1f);
+        startThrow = false;
         //StartCoroutine(ThrowItem(ItemType.HP, data.hp - (p.maxHP - p.HP) < 0 ? data.hp : p.maxHP - p.HP, true));
     }
 
