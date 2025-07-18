@@ -8,6 +8,8 @@ public abstract class Fish : MonoBehaviour
     public LayerMask playerLayer;
     public LayerMask obstacleLayer;
 
+    public float currentHP;
+
     [HideInInspector] public Vector2 currentVelocity;
     [HideInInspector] public Vector2 currentAcceleration;
     [HideInInspector] public bool isDie = false;
@@ -54,6 +56,13 @@ public abstract class Fish : MonoBehaviour
     {
         currentVelocity = Vector2.zero;
         currentAcceleration = Vector2.zero;
+
+        
+    }
+
+    private void Start()
+    {
+        currentHP = fishData.health;
     }
 
     protected virtual void Update()
@@ -174,11 +183,11 @@ public abstract class Fish : MonoBehaviour
 
     public virtual void TakeDamage(Transform damageDealer, float damage)
     {
-        if (fishData.health <= 0) return;
+        if (currentHP <= 0) return;
 
-        fishData.health -= damage;
+        currentHP -= damage;
 
-        if (fishData.health <= 0 && !isDie)
+        if (currentHP <= 0 && !isDie)
         {
             isDie = true;
             Debug.Log($"{gameObject.name} is dead.");

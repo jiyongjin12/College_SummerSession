@@ -19,7 +19,7 @@ MonoBehaviour:
   habitats: 03000000
   minDepth: 10
   maxDepth: 85
-  health: 10
+  health: 1
   normalSpeed: 2.5
   behaviorType: 0
   playerDetectionRange: 2
