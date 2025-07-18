@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: NeutralFish
   m_EditorClassIdentifier: 
   fishName: Neutral
-  fishID: 0
+  fishID: 2
   fishPrefab: {fileID: 303266946381429985, guid: e80011214773a16409eb0e872046db7e, type: 3}
   fishType: 0
   habitats: 02000000

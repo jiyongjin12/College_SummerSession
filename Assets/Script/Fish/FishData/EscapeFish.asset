@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: EscapeFish
   m_EditorClassIdentifier: 
   fishName: Escape
-  fishID: 0
+  fishID: 1
   fishPrefab: {fileID: 303266946381429985, guid: 93db5743b0a65ab48987ddd5d6a22a27, type: 3}
   fishType: 0
   habitats: 03000000

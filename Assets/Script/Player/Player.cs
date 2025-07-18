@@ -12,9 +12,8 @@ public class Player : MonoBehaviour
     [Header("Objects")]
     public VariableJoystick moveJoystick;
     public VariableJoystick targetJoystick;
-    public Button interactionButton;
-    public RectTransform target;
     Rigidbody2D rigid;
+    GameCanvas canvas;
     Animator anim;
     Vector3 pos;
 
@@ -57,9 +56,9 @@ public class Player : MonoBehaviour
 
     private void Start()
     {
+        canvas = GameCanvas.Instance;
         rigid = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
-        interactionButton.onClick.AddListener(FireModeChangeButton);
 
         DataManager d = DataManager.instance;
         maxHP = d.upgradeData.hpLVList[d.curPlayerData.hpLV];
@@ -69,13 +68,15 @@ public class Player : MonoBehaviour
         HP = maxHP;
         O2 = maxO2;
         capacity = 0;
+
+        canvas.interactionButton.onClick.AddListener(FireModeChangeButton);
     }
 
     void Update()
     {
         pos = transform.position;
         if (!isActive) return;
-        if (targetJoystick.HendleMove != Vector2.zero) target.anchoredPosition = targetJoystick.HendleMove * radius;
+        if (targetJoystick.HendleMove != Vector2.zero) canvas.target.anchoredPosition = targetJoystick.HendleMove * radius;
 
         Move();
         if(targetJoystick.HendleInput.magnitude > 0.5f) curWeapon.UsingGun(fireMode);
@@ -91,7 +92,7 @@ public class Player : MonoBehaviour
         // x = moveJoystick.Horizontal;
         // y = moveJoystick.Vertical;
 
-        dir = target.position - pos;
+        dir = canvas.target.position - pos;
         float z = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
 
         Vector3 nor = new Vector3(x, y, 0f).normalized;

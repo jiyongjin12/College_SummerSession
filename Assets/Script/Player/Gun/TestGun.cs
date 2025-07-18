@@ -15,12 +15,6 @@ public class TestGun : Gun_Base
         temp.Init(lifeTime, moveSpeed, damage);
         curAmmo--;
         if(!isInfinite) remainAmmo--;
-        cur_bullet_delay = 0;
+        curBulletDelay = 0;
     }
-
-    protected override void Click()
-    {
-        cur_bullet_delay += 0.1f;
-    }
-
 }

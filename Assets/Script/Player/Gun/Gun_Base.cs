@@ -16,6 +16,7 @@ public abstract class Gun_Base : MonoBehaviour
     //protected Magazine _magazine;
     protected Animator anim;
     protected Vector3 target;
+    GameCanvas canvas;
     Player p;
     Text ammo_text;
 
@@ -23,11 +24,12 @@ public abstract class Gun_Base : MonoBehaviour
     [Header("Status")]
     [Header("Delay")]
     [SerializeField] protected float damage;
-    [SerializeField] protected float max_bullet_delay;
-    [SerializeField] float max_rerode_delay;
-    [SerializeField] float minus_rerode_delay;
-    protected float cur_bullet_delay;
-    protected float cur_rerode_delay;
+    [SerializeField] protected float maxBulletDelay;
+    [SerializeField] float waitRerodeTime;
+    [SerializeField] float rerodeDelay;
+    protected float curBulletDelay;
+    protected float curRerodeDelay;
+    protected float curWaitRerodeTime;
 
     [Header("Ammo")]
     public int magazine;
@@ -39,8 +41,6 @@ public abstract class Gun_Base : MonoBehaviour
     [SerializeField] protected float dir_ran_min;
     [SerializeField] protected float dir_ran_max;
 
-    bool isFest;
-    bool isCilck;
     bool isRerode;
     public bool isActive = true;
     protected bool isRight;
@@ -56,9 +56,9 @@ public abstract class Gun_Base : MonoBehaviour
     protected float rot;
 
     [Header("Inhale")]
-    public float suckRange = 3f;
-    public float fieldOfView = 60f; // 원뿔 각도 (좌우로 30도씩)
-    public float enemymoveSpeed = 5f;
+    public float suckRange;
+    public float fieldOfView;
+    public float enemymoveSpeed;
     public LayerMask suckableLayer;
     public Transform suckPoint;
     public Vector2 suckDirection;
@@ -66,13 +66,14 @@ public abstract class Gun_Base : MonoBehaviour
 
     protected virtual void Start()
     {
+        canvas = GameCanvas.Instance;
         p = Player.Instance;
 
         DataManager d = DataManager.instance;
         List<float> StatusList = d.GetCurGunLVData();
         damage = StatusList[0];
-        max_bullet_delay = StatusList[1];
-        max_rerode_delay = StatusList[2];
+        maxBulletDelay = StatusList[1];
+        rerodeDelay = StatusList[2];
         magazine = (int)StatusList[3];
         maxAmmo = (int)StatusList[4];
         curAmmo = magazine;
@@ -94,14 +95,19 @@ public abstract class Gun_Base : MonoBehaviour
 
     protected virtual void Update()
     {
-        target = p.target.position;
+        target = canvas.target.position;
 
         if (!isActive) return;
 
         Spin();
 
-        if (isRerode) Reload();
-        if (cur_bullet_delay < max_bullet_delay) cur_bullet_delay += Time.deltaTime;
+        if (curBulletDelay < maxBulletDelay) curBulletDelay += Time.deltaTime;
+        if (curAmmo < magazine)
+        {
+            if (curWaitRerodeTime < waitRerodeTime) curWaitRerodeTime += Time.deltaTime;
+            else Reload();
+        }
+
     }
 
     public void UsingGun(bool curMode)
@@ -112,9 +118,10 @@ public abstract class Gun_Base : MonoBehaviour
 
     void Reload()
     {
-        cur_rerode_delay += Time.deltaTime;
-        //canvas.rerode.SetFill(1 - cur_rerode_delay / max_rerode_delay);
-        if (cur_rerode_delay > max_rerode_delay && isRerode)
+        isRerode = true;
+        curRerodeDelay += Time.deltaTime;
+        canvas.FillRerode(curRerodeDelay / rerodeDelay);
+        if (curRerodeDelay > rerodeDelay && isRerode)
         {
             isRerode = false;
             if (remainAmmo > magazine)
@@ -122,11 +129,7 @@ public abstract class Gun_Base : MonoBehaviour
             else
                 curAmmo = remainAmmo;
 
-            if (isFest)
-            {
-                max_rerode_delay += minus_rerode_delay;
-                isFest = false;
-            }
+            curRerodeDelay = 0;
             //_magazine.CurMagazin();
         }
     }
@@ -135,34 +138,18 @@ public abstract class Gun_Base : MonoBehaviour
     {
         if (!isActive) return;
 
-        if (!isRerode)
+        if (isRerode)
         {
-            if ((curAmmo == 0 && Input.GetMouseButtonDown(0)))
-            {
-                isRerode = true;
-                //SoundManager.Instance.Sound(relode, false, 1);
-                cur_rerode_delay = 0;
-            }
-            else if (Input.GetKeyDown(KeyCode.R))
-            {
-                isRerode = true;
-                isFest = true;
-                max_rerode_delay -= minus_rerode_delay;
-                //SoundManager.Instance.Sound(relode, false, 1);
-                cur_rerode_delay = 0;
-            }
+            curWaitRerodeTime = 0;
+            curRerodeDelay = 0;
+            canvas.FillRerode(0);
+            isRerode = false;
         }
-        else return;
 
-        if (Input.GetMouseButtonUp(0) && !isCilck)
-        {
-            isCilck = true;
-            Click();
-        }
         if (!Input.GetMouseButton(0)) return;
-        if (cur_bullet_delay < max_bullet_delay) return;
+        if (curBulletDelay < maxBulletDelay) return;
         Shot();
-        isCilck = false;
+        curWaitRerodeTime = 0;
     }
 
     protected void Spin()
@@ -215,7 +202,7 @@ public abstract class Gun_Base : MonoBehaviour
             Destroy(col.gameObject);
         }
 
-        
+
     }
 
     void OnDrawGizmosSelected()
@@ -238,6 +225,4 @@ public abstract class Gun_Base : MonoBehaviour
     }
 
     protected abstract void Shot();
-
-    protected abstract void Click();
 }
