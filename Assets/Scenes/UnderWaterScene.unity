@@ -1252,7 +1252,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 914294365}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2503e9f9b94481042a504cf1292e8038, type: 3}
   m_Name: 
@@ -1264,8 +1264,10 @@ MonoBehaviour:
   HP: 10
   maxHP: 0
   O2: 0
+  maxO2: 0
   moveSpeed: 5
   capacity: 0
+  maxCapacity: 0
   curFishList: 
   gunPos: {fileID: 441254485}
   curWeapon: {fileID: 1414441839}
@@ -3216,7 +3218,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1414441838}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 3e483b0ad8bcb004c9be1aedffdde6b4, type: 3}
   m_Name: 
@@ -3826,11 +3828,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   spawnFishUnitData:
   - fishData: {fileID: 11400000, guid: 475ef17ac7430834785debe8574afc33, type: 2}
-    boidSpawnCount: 1
+    boidSpawnCount: 30
   - fishData: {fileID: 11400000, guid: bef0d49c47a5e86498517e8d7fa0729c, type: 2}
-    boidSpawnCount: 1
+    boidSpawnCount: 30
   - fishData: {fileID: 11400000, guid: c14ef5e16eae1b34abad66f7c4530d56, type: 2}
-    boidSpawnCount: 1
+    boidSpawnCount: 30
   boidPrefab: {fileID: 4147258140624695078, guid: 309a489fa6ddb814aab08453ac45532e, type: 3}
   minSpawnDistance: 3
   rejectionSamples: 500
