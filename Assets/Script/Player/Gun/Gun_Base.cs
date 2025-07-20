@@ -113,9 +113,21 @@ public abstract class Gun_Base : MonoBehaviour
 
     }
 
+    public void BulletUI()
+    {
+        ammoImage.fillAmount = (float)curAmmo / magazine;
+        allAmmoImage.fillAmount = (float)remainAmmo/ maxAmmo;
+    }
+
     public void UsingGun(bool curMode)
     {
         isFire = curMode;
+
+        curWaitRerodeTime = 0;
+        curRerodeDelay = 0;
+        canvas.FillRerode(0);
+        isRerode = false;
+        
         if (curMode) Fire();
         else Inhale();
     }
@@ -134,6 +146,7 @@ public abstract class Gun_Base : MonoBehaviour
                 curAmmo = remainAmmo;
 
             curRerodeDelay = 0;
+            BulletUI();
         }
     }
 
@@ -152,8 +165,7 @@ public abstract class Gun_Base : MonoBehaviour
         if (!Input.GetMouseButton(0)) return;
         if (curBulletDelay < maxBulletDelay) return;
         Shot();
-        ammoImage.fillAmount = (float)curAmmo / magazine;
-        allAmmoImage.fillAmount = (float)remainAmmo/ maxAmmo;
+        BulletUI();
         curWaitRerodeTime = 0;
     }
 

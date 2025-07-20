@@ -84,6 +84,7 @@ public class ItemBullet : Bullet_Base
             case ItemType.O2: p.O2++; break;
             case ItemType.Fish: p.capacity--; break; //Temporary
         }
+        p.curWeapon.BulletUI();
         Destroy(gameObject);
     }
 
