@@ -34,16 +34,16 @@ public class DataManager : MonoBehaviour
 
     public List<float> GetCurGunLVData() //int curGunIndex, int curLV
     {
-        //나중에 특수 스탯 확인용으로 돌릴 예정, string으로 저장해두고 총기에 따라 불러오는 스탯이 다를테니 그부분 신경쓰며 할것
-        // int curGunIndex = curPlayerData.gunID;
-        // int curLV = curPlayerData.gunLV;
+        int curGunIndex = curPlayerData.gunID;
+        int curLV = curPlayerData.gunLV;
         List<float> returnList = new();
-        // string curLVGunTextData = gunUpgradeData[curGunIndex][curLV - 1];
-        // string[] columns = curLVGunTextData.Split(',');
-        // foreach (var data in columns)
-        // {
-        //     if (float.TryParse(data, out var temp)) returnList.Add(temp);
-        // }
+        string curLVGunTextData = gunUpgradeData[curGunIndex].LV[curLV - 1];
+        string[] columns = curLVGunTextData.Split(',');
+        Debug.Log(curLVGunTextData);
+        for (int i = 2; i < columns.Length; i++)
+        {
+            if (float.TryParse(columns[i], out var temp)) returnList.Add(temp);
+        }
         return returnList;
     }
 
@@ -83,18 +83,7 @@ public class DataManager : MonoBehaviour
                 continue;
             }
             if (columns[1] == string.Empty) continue;
-            GunData curGunData = new()
-            {
-                curLV = int.Parse(columns[1]),
-                damage = float.Parse(columns[2]),
-                bulletDelay = float.Parse(columns[3]),
-                rerodeDelay = float.Parse(columns[4]),
-                magazine = int.Parse(columns[5]),
-                maxAmmo = int.Parse(columns[6]),
-                dirRanMin = float.Parse(columns[7]),
-                dirRanMax = float.Parse(columns[8])
-            };
-            curGunLVData.LV.Add(curGunData);
+            curGunLVData.LV.Add(rows[i]);
         }
         gunUpgradeData = newData;
     }
@@ -109,19 +98,5 @@ public class PlayerData
 [Serializable]
 public class GunDataList
 {
-    public List<GunData> LV = new();
-}
-
-[Serializable]
-public class GunData
-{
-    public int curLV;
-
-    public float damage;
-    public float bulletDelay;
-    public float rerodeDelay;
-    public int magazine;
-    public int maxAmmo;
-    public float dirRanMin;
-    public float dirRanMax;
+    public List<string> LV = new();
 }
