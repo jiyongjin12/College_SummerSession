@@ -10,6 +10,8 @@ public class Player : MonoBehaviour
     public static Player Instance => _instance;
 
     [Header("Objects")]
+    [SerializeField] Image O2Image;
+    [SerializeField] Image hpImage;
     public VariableJoystick moveJoystick;
     public VariableJoystick targetJoystick;
     Rigidbody2D rigid;
@@ -26,6 +28,7 @@ public class Player : MonoBehaviour
     public int capacity;
     public int maxCapacity;
     public List<int> curFishList = new();
+    float O2Timer;
 
     [Header("Weapon")]
     public Transform gunPos;
@@ -62,10 +65,10 @@ public class Player : MonoBehaviour
         anim = GetComponent<Animator>();
 
         DataManager d = DataManager.instance;
-        maxHP = d.upgradeData[0].data[d.curPlayerData.playerLV[0]];
-        maxO2 = d.upgradeData[1].data[d.curPlayerData.playerLV[1]];
-        moveSpeed = d.upgradeData[2].data[d.curPlayerData.playerLV[2]];
-        maxCapacity = d.upgradeData[3].data[d.curPlayerData.playerLV[3]];
+        maxHP = d.upgradeData[0].LV[d.curPlayerData.playerLV[0]];
+        maxO2 = d.upgradeData[1].LV[d.curPlayerData.playerLV[1]];
+        moveSpeed = d.upgradeData[2].LV[d.curPlayerData.playerLV[2]];
+        maxCapacity = d.upgradeData[3].LV[d.curPlayerData.playerLV[3]];
 
         HP = maxHP;
         O2 = maxO2;
@@ -80,13 +83,22 @@ public class Player : MonoBehaviour
         if (!isActive) return;
         if (targetJoystick.HendleMove != Vector2.zero) canvas.target.anchoredPosition = targetJoystick.HendleMove * radius;
 
+        if (Input.GetKeyDown(KeyCode.Space)) HP -= 10;
         if (isCantMove)
         {
             rigid.linearVelocity = Vector2.zero;
             return;
         }
         Move();
-        if(targetJoystick.HendleInput.magnitude > 0.5f) curWeapon.UsingGun(fireMode);
+        O2Timer += Time.deltaTime;
+        if (O2Timer >= 1)
+        {
+            O2Timer = 0;
+            O2--;
+        }
+        O2Image.fillAmount = (float)O2 / maxO2;
+        hpImage.fillAmount = (float)HP / maxHP;
+        if (targetJoystick.HendleInput.magnitude > 0.5f) curWeapon.UsingGun(fireMode);
     }
 
     public void FireModeChangeButton() { fireMode = !fireMode; }

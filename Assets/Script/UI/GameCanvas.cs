@@ -33,7 +33,7 @@ public class GameCanvas : MonoBehaviour
 
         rerode.gameObject.SetActive(fillAmount < 1);
     }
-    
+
     public void FillEscape(float fillAmount)
     {
         EscapeBar.fillAmount = fillAmount;

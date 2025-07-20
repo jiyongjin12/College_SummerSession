@@ -12,6 +12,8 @@ public abstract class Gun_Base : MonoBehaviour
 
     [SerializeField] protected Transform startpos;
     [SerializeField] protected Bullet_Base bullet;
+    [SerializeField] Image ammoImage;
+    [SerializeField] Image allAmmoImage;
 
     //protected Magazine _magazine;
     protected Animator anim;
@@ -71,16 +73,16 @@ public abstract class Gun_Base : MonoBehaviour
         p = Player.Instance;
 
         DataManager d = DataManager.instance;
-        List<float> StatusList = d.GetCurGunLVData();
-        damage = StatusList[0];
-        maxBulletDelay = StatusList[1];
-        rerodeDelay = StatusList[2];
-        magazine = (int)StatusList[3];
-        maxAmmo = (int)StatusList[4];
+        List<float> datas = d.gunUpgradeData[d.curPlayerData.gunID].LV[d.curPlayerData.gunLV[d.curPlayerData.gunID]].status;
+        damage = datas[0];
+        maxBulletDelay = datas[1];
+        rerodeDelay = datas[2];
+        magazine = (int)datas[3];
+        maxAmmo = (int)datas[4];
         curAmmo = magazine;
         remainAmmo = maxAmmo;
-        dirRanMin = StatusList[5];
-        dirRanMax = StatusList[6];
+        dirRanMin = datas[5];
+        dirRanMax = datas[6];
 
         //anim = me.gameObject.GetComponent<Animator>();
         // canvas = MainCanvas.Instance;
@@ -132,7 +134,6 @@ public abstract class Gun_Base : MonoBehaviour
                 curAmmo = remainAmmo;
 
             curRerodeDelay = 0;
-            //_magazine.CurMagazin();
         }
     }
 
@@ -151,6 +152,8 @@ public abstract class Gun_Base : MonoBehaviour
         if (!Input.GetMouseButton(0)) return;
         if (curBulletDelay < maxBulletDelay) return;
         Shot();
+        ammoImage.fillAmount = (float)curAmmo / magazine;
+        allAmmoImage.fillAmount = (float)remainAmmo/ maxAmmo;
         curWaitRerodeTime = 0;
     }
 

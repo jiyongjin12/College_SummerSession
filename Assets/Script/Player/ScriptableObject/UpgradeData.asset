@@ -14,4 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerLV: 04000000030000000400000004000000
   gunID: 1
-  gunLV: 5
+  gunLV: 0100000005000000

@@ -20,7 +20,7 @@ public class PlayerUpgradeView : MonoBehaviour
         isShow = !isShow;
 
         panels.SetActive(isShow);
-        money.text = $"보유자원 : ";
+        money.text = "보유자원 : ";
     }
 
     public void InitButton()
@@ -37,7 +37,7 @@ public class PlayerUpgradeView : MonoBehaviour
                 case 2: text = "Speed"; break;
                 case 3: text = "Capacity"; break;
             }
-            btn.Init(d, i, text);
+            btn.Init(i, text);
         }
     }
 }

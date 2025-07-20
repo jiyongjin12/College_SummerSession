@@ -32,20 +32,20 @@ public class DataManager : MonoBehaviour
         ReadGunUpgradeData(GunUpgradeData.text);
     }
 
-    public List<float> GetCurGunLVData() //int curGunIndex, int curLV
-    {
-        int curGunIndex = curPlayerData.gunID;
-        int curLV = curPlayerData.gunLV;
-        List<float> returnList = new();
-        string curLVGunTextData = gunUpgradeData[curGunIndex].LV[curLV - 1];
-        string[] columns = curLVGunTextData.Split(',');
-        Debug.Log(curLVGunTextData);
-        for (int i = 2; i < columns.Length; i++)
-        {
-            if (float.TryParse(columns[i], out var temp)) returnList.Add(temp);
-        }
-        return returnList;
-    }
+    // public List<float> GetCurGunLVData() //int curGunIndex, int curLV
+    // {
+    //     int curGunIndex = curPlayerData.gunID;
+    //     int curLV = curPlayerData.gunLV;
+    //     List<float> returnList = new();
+    //     string curLVGunTextData = gunUpgradeData[curGunIndex].LV[curLV - 1];
+    //     string[] columns = curLVGunTextData.Split(',');
+    //     Debug.Log(curLVGunTextData);
+    //     for (int i = 2; i < columns.Length; i++)
+    //     {
+    //         if (float.TryParse(columns[i], out var temp)) returnList.Add(temp);
+    //     }
+    //     return returnList;
+    // }
 
     public void ReadStatusUpgradeData(string data)
     {
@@ -57,7 +57,7 @@ public class DataManager : MonoBehaviour
             PlayerData curStatusList = new();
             for (int j = 1; j < columns.Length; j++)
             {
-                if (int.TryParse(columns[j], out var temp)) curStatusList.data.Add(temp);
+                if (int.TryParse(columns[j], out var temp)) curStatusList.LV.Add(temp);
             }
 
             newData.Add(curStatusList);
@@ -78,12 +78,18 @@ public class DataManager : MonoBehaviour
                 if (i != 1)
                 {
                     newData.Add(curGunLVData);
+                    //나중에 저장데이터 가져올때 초기화된 GunLV 리스트에 레벨저장값 넣어두기
                     curGunLVData = new();
                 }
                 continue;
             }
             if (columns[1] == string.Empty) continue;
-            curGunLVData.LV.Add(rows[i]);
+            GunData curGunData = new();
+            for (int j = 2; j < columns.Length; j++)
+            {
+                curGunData.status.Add(float.Parse(columns[j]));
+            }
+            curGunLVData.LV.Add(curGunData);
         }
         gunUpgradeData = newData;
     }
@@ -92,11 +98,17 @@ public class DataManager : MonoBehaviour
 [Serializable]
 public class PlayerData
 {
-    public List<int> data = new();
+    public List<int> LV = new();
 }
 
 [Serializable]
 public class GunDataList
 {
-    public List<string> LV = new();
+    public List<GunData> LV = new();
+}
+
+[Serializable]
+public class GunData
+{
+    public List<float> status = new();
 }

@@ -12,20 +12,20 @@ public class PlayerUpgradeButton : MonoBehaviour
     int curLV;
     int index;
 
-    public void Init(DataManager _d, int _index, string _target)
+    public void Init(int _index, string _target)
     {
-        d = _d;
+        d = DataManager.instance;
         index = _index;
         curLV = d.curPlayerData.playerLV[index];
         target = _target;
 
         upgradeTarget.text = $"{target}\nLV : {curLV + 1}";
-        if (curLV >= d.upgradeData[index].data.Count - 1)
+        if (curLV >= d.upgradeData[index].LV.Count - 1)
         {
-            curUpgradeLV.text = $"{d.upgradeData[index].data[d.curPlayerData.playerLV[index]]}";
+            curUpgradeLV.text = $"{d.upgradeData[index].LV[d.curPlayerData.playerLV[index]]}";
             button.gameObject.SetActive(false);
         }
-        else curUpgradeLV.text = $"{d.upgradeData[index].data[curLV]} => {d.upgradeData[index].data[curLV + 1]}";
+        else curUpgradeLV.text = $"{d.upgradeData[index].LV[curLV]} => {d.upgradeData[index].LV[curLV + 1]}";
 
         button.onClick.AddListener(Upgrade);
     }
@@ -36,11 +36,11 @@ public class PlayerUpgradeButton : MonoBehaviour
         curLV = d.curPlayerData.playerLV[index];
 
         upgradeTarget.text = $"{target}\nLV : {curLV + 1}";
-        if (curLV >= d.upgradeData[index].data.Count - 1)
+        if (curLV >= d.upgradeData[index].LV.Count - 1)
         {
-            curUpgradeLV.text = $"{d.upgradeData[index].data[d.curPlayerData.playerLV[index]]}";
+            curUpgradeLV.text = $"{d.upgradeData[index].LV[d.curPlayerData.playerLV[index]]}";
             button.gameObject.SetActive(false);
         }
-        else curUpgradeLV.text = $"{d.upgradeData[index].data[curLV]} => {d.upgradeData[index].data[curLV + 1]}";
+        else curUpgradeLV.text = $"{d.upgradeData[index].LV[curLV]} => {d.upgradeData[index].LV[curLV + 1]}";
     }
 }
