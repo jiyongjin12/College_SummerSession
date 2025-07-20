@@ -68,6 +68,12 @@ public class FishData : ScriptableObject
     [TextArea(3, 5)]
     public string description; // 물고기 설명 (도감에 표시)
     public Sprite fishIcon; // 도감에 표시될 물고기 아이콘
+
+    // Test - 개인이동
+    [Header("Ego Movement Parameters")]
+    public Vector2 egoSpeedRange = new Vector2(0.5f, 1.5f); // 개인 이동 시 속도 범위 (normalSpeed의 배율)
+    public Vector2 egoDirectionChangeInterval = new Vector2(1f, 3f); // 개인 이동 방향 변경 주기 범위
+    public float egoWeight = 0.1f; // 군집 행동에 대한 개인 이동의 가중치
 }
 
 public enum FishType

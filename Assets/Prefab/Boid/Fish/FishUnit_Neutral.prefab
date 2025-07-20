@@ -112,6 +112,8 @@ MonoBehaviour:
   currentVelocity: {x: 0, y: 0}
   currentAcceleration: {x: 0, y: 0}
   isDie: 0
+  _avoidanceDirection: {x: 0, y: 0}
+  _isObstacleAhead: 0
   parentID: -1
   boidSpawnAreaCenter: {x: 0, y: 0}
   boidSpawnAreaRadius: 0
