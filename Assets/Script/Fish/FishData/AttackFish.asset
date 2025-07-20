@@ -21,7 +21,7 @@ MonoBehaviour:
   maxDepth: 85
   health: 10
   normalSpeed: 2.5
-  behaviorType: 0
+  behaviorType: 1
   playerDetectionRange: 2
   fieldOfView: 120
   scopeOfActivity: 30
