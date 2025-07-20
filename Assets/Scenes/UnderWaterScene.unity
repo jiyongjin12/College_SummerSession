@@ -4387,8 +4387,8 @@ MonoBehaviour:
   curAmmo: 1000
   remainAmmo: 950
   maxAmmo: 1000
-  dir_ran_min: 1
-  dir_ran_max: 1
+  dirRanMin: 0
+  dirRanMax: 0
   isActive: 1
   isInfinite: 0
   _fire: {fileID: 0}
@@ -4718,12 +4718,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   curPlayerData: {fileID: 11400000, guid: dcd8b769607c2e448a52a00519158fb3, type: 2}
-  upgradeData:
-    hpLVList: 
-    O2LVList: 
-    speedLVList: 
-    capacityLVList: 
-  testData: []
+  gunUpgradeData: []
   StatusUpgradeData: {fileID: 4900000, guid: e9b3548e27413674c968ef1e9a02e732, type: 3}
   GunUpgradeData: {fileID: 4900000, guid: 4b9349c4df4456e4680e01335f5f15a9, type: 3}
 --- !u!4 &1953812517

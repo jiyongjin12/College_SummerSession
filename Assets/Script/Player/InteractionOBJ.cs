@@ -31,10 +31,11 @@ public abstract class InteractionOBJ : MonoBehaviour
     {
         if (collision.CompareTag("Player"))
         {
+            if (canvas.interactionButton == null) return;
             TriggerEvent(true);
             canvas.interactionButton.onClick.AddListener(p.FireModeChangeButton);
             canvas.interactionButton.onClick.RemoveListener(add);
-            if(canvas.interactionButton.TryGetComponent<Image>(out var image)) image.color = Color.white;
+            canvas.interactionButton.GetComponent<Image>().color = Color.white;
         }
     }
 

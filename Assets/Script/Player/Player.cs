@@ -62,9 +62,10 @@ public class Player : MonoBehaviour
         anim = GetComponent<Animator>();
 
         DataManager d = DataManager.instance;
-        maxHP = d.upgradeData.hpLVList[d.curPlayerData.hpLV];
-        maxO2 = d.upgradeData.O2LVList[d.curPlayerData.O2LV];
-        maxCapacity = d.upgradeData.capacityLVList[d.curPlayerData.capacityLV];
+        maxHP = d.upgradeData[0].data[d.curPlayerData.playerLV[0]];
+        maxO2 = d.upgradeData[1].data[d.curPlayerData.playerLV[1]];
+        moveSpeed = d.upgradeData[2].data[d.curPlayerData.playerLV[2]];
+        maxCapacity = d.upgradeData[3].data[d.curPlayerData.playerLV[3]];
 
         HP = maxHP;
         O2 = maxO2;

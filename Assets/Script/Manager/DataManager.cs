@@ -8,9 +8,8 @@ public class DataManager : MonoBehaviour
     public static DataManager instance { get; private set; }
 
     public StatusUpgradeData curPlayerData;
-    public UpgradeData upgradeData;
-    public List<List<string>> gunUpgradeData;
-    public List<string> testData;
+    public List<PlayerData> upgradeData;
+    public List<GunDataList> gunUpgradeData;
 
     [Header("Data")]
     [SerializeField] private TextAsset StatusUpgradeData;
@@ -35,72 +34,94 @@ public class DataManager : MonoBehaviour
 
     public List<float> GetCurGunLVData() //int curGunIndex, int curLV
     {
-        int curGunIndex = curPlayerData.gunID;
-        int curLV = curPlayerData.gunLV;
+        //나중에 특수 스탯 확인용으로 돌릴 예정, string으로 저장해두고 총기에 따라 불러오는 스탯이 다를테니 그부분 신경쓰며 할것
+        // int curGunIndex = curPlayerData.gunID;
+        // int curLV = curPlayerData.gunLV;
         List<float> returnList = new();
-        string curLVGunTextData = gunUpgradeData[curGunIndex][curLV - 1];
-        string[] columns = curLVGunTextData.Split(',');
-        foreach (var data in columns)
-        {
-            if (float.TryParse(data, out var temp)) returnList.Add(temp);
-        }
+        // string curLVGunTextData = gunUpgradeData[curGunIndex][curLV - 1];
+        // string[] columns = curLVGunTextData.Split(',');
+        // foreach (var data in columns)
+        // {
+        //     if (float.TryParse(data, out var temp)) returnList.Add(temp);
+        // }
         return returnList;
     }
 
     public void ReadStatusUpgradeData(string data)
     {
         string[] rows = data.Split('\n');
-        var newData = new UpgradeData();
+        List<PlayerData> newData = new();
         for (int i = 1; i < rows.Length; i++)
         {
             string[] columns = rows[i].Split(',');
-            List<int> curStatusList = new();
+            PlayerData curStatusList = new();
             for (int j = 1; j < columns.Length; j++)
             {
-                if(int.TryParse(columns[j], out var temp)) curStatusList.Add(temp);
+                if (int.TryParse(columns[j], out var temp)) curStatusList.data.Add(temp);
             }
 
-            switch (i)
-            {
-                case 1: newData.hpLVList = curStatusList; break;
-                case 2: newData.O2LVList = curStatusList; break;
-                case 3: newData.speedLVList = curStatusList; break;
-                case 4: newData.capacityLVList = curStatusList; break;
-            }
+            newData.Add(curStatusList);
         }
         upgradeData = newData;
     }
     public void ReadGunUpgradeData(string data)
     {
         string[] rows = data.Split('\n');
-        List<List<string>> newData = new();
-        List<string> curGunData = new();
+        List<GunDataList> newData = new() { };
+        GunDataList curGunLVData = new();
         for (int i = 1; i < rows.Length; i++)
         {
             string[] columns = rows[i].Split(',');
 
-            if (columns[0] != string.Empty)
+            if (columns[0] != string.Empty || columns.Length <= 1)
             {
                 if (i != 1)
                 {
-                    newData.Add(curGunData);
-                    curGunData = new();
+                    newData.Add(curGunLVData);
+                    curGunLVData = new();
                 }
                 continue;
             }
-            curGunData.Add(rows[i]);
+            if (columns[1] == string.Empty) continue;
+            GunData curGunData = new()
+            {
+                curLV = int.Parse(columns[1]),
+                damage = float.Parse(columns[2]),
+                bulletDelay = float.Parse(columns[3]),
+                rerodeDelay = float.Parse(columns[4]),
+                magazine = int.Parse(columns[5]),
+                maxAmmo = int.Parse(columns[6]),
+                dirRanMin = float.Parse(columns[7]),
+                dirRanMax = float.Parse(columns[8])
+            };
+            curGunLVData.LV.Add(curGunData);
         }
-        testData = curGunData;
-        newData.Add(curGunData);
         gunUpgradeData = newData;
     }
 }
 
-[System.Serializable]
-public class UpgradeData
+[Serializable]
+public class PlayerData
 {
-    public List<int> hpLVList;
-    public List<int> O2LVList;
-    public List<int> speedLVList;
-    public List<int> capacityLVList;
+    public List<int> data = new();
+}
+
+[Serializable]
+public class GunDataList
+{
+    public List<GunData> LV = new();
+}
+
+[Serializable]
+public class GunData
+{
+    public int curLV;
+
+    public float damage;
+    public float bulletDelay;
+    public float rerodeDelay;
+    public int magazine;
+    public int maxAmmo;
+    public float dirRanMin;
+    public float dirRanMax;
 }

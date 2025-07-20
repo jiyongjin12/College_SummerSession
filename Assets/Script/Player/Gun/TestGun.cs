@@ -10,7 +10,7 @@ public class TestGun : Gun_Base
     {
         if(curAmmo == 0 || remainAmmo == 0) return;
 
-        float dir_ran = Random.Range(dir_ran_min, dir_ran_max + 1);
+        float dir_ran = Random.Range(dirRanMin, dirRanMax + 1);
         var temp = Instantiate(bullet, startpos.transform.position, Quaternion.Euler(0, 0, rot + dir_ran)).GetComponent<Bullet_Base>();
         temp.Init(lifeTime, moveSpeed, damage);
         curAmmo--;

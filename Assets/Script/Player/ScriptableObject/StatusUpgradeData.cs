@@ -1,12 +1,11 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "StatusUpgradeData", menuName = "Data/StatusUpgradeData")]
 public class StatusUpgradeData : ScriptableObject
 {
-    public int hpLV;
-    public int O2LV;
-    public int speedLV;
-    public int capacityLV;
+    [Header("0 : HP / 1 : O2 / 2 : Speed / 3 : Capacity")]
+    public List<int> playerLV = new();
     public int gunID;
-    public int gunLV;
+    public List<int> gunLV;
 }
