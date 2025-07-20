@@ -21,7 +21,7 @@ MonoBehaviour:
   maxDepth: 85
   health: 10
   normalSpeed: 2.5
-  behaviorType: 0
+  behaviorType: 2
   playerDetectionRange: 8
   fieldOfView: 275
   scopeOfActivity: 30
@@ -46,3 +46,6 @@ MonoBehaviour:
   baseValue: 0
   description: 
   fishIcon: {fileID: 0}
+  egoSpeedRange: {x: 0.5, y: 1.5}
+  egoDirectionChangeInterval: {x: 1, y: 3}
+  egoWeight: 0.1
