@@ -71,16 +71,16 @@ public abstract class Gun_Base : MonoBehaviour
         p = Player.Instance;
 
         DataManager d = DataManager.instance;
-        List<GunData> datas = d.gunUpgradeData[d.curPlayerData.gunID].LV;
-        damage = datas[d.curPlayerData.gunLV[0]].damage;
-        maxBulletDelay = datas[d.curPlayerData.gunLV[1]].bulletDelay;
-        rerodeDelay = datas[d.curPlayerData.gunLV[2]].rerodeDelay;
-        magazine = datas[d.curPlayerData.gunLV[3]].magazine;
-        maxAmmo = datas[d.curPlayerData.gunLV[4]].maxAmmo;
+        List<float> StatusList = d.GetCurGunLVData();
+        damage = StatusList[0];
+        maxBulletDelay = StatusList[1];
+        rerodeDelay = StatusList[2];
+        magazine = (int)StatusList[3];
+        maxAmmo = (int)StatusList[4];
         curAmmo = magazine;
         remainAmmo = maxAmmo;
-        dirRanMin = datas[d.curPlayerData.gunLV[5]].dirRanMin;
-        dirRanMax = datas[d.curPlayerData.gunLV[6]].dirRanMax;
+        dirRanMin = StatusList[5];
+        dirRanMax = StatusList[6];
 
         //anim = me.gameObject.GetComponent<Animator>();
         // canvas = MainCanvas.Instance;

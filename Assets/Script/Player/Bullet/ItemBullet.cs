@@ -25,7 +25,7 @@ public class ItemBullet : Bullet_Base
         switch (type)
         {
             case ItemType.HP: sprite.color = Color.red; break;
-            case ItemType.Ammo: sprite.color = Color.black; break;
+            case ItemType.Ammo: sprite.color = Color.yellow; break;
             case ItemType.O2: sprite.color = Color.cyan; break;
             case ItemType.Fish: sprite.color = Color.white; break; //Temporary
         }

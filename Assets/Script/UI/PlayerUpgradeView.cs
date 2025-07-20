@@ -1,12 +1,13 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class PlayerUpgradeView : MonoBehaviour
 {
     [SerializeField] GameObject panels;
     [SerializeField] GameObject button;
     [SerializeField] RectTransform btnParent;
-    [SerializeField] Text money;
+    [SerializeField] TMP_Text money;
     private bool isShow = false;
 
     void Start()
